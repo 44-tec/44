@@ -1,0 +1,2041 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRA — Compte Rendu d'Activité</title>
+<style>
+
+/* ============================================================
+   MAQUETTE CRA — design système v3 « produit », THÈME SOMBRE par défaut
+   Palette : instance de référence validée (pas sombres officiels).
+   Bascule clair disponible ([data-theme="light"] sur <html>).
+   ============================================================ */
+:root {
+  color-scheme: dark;
+  /* Surfaces & encres (sombre) */
+  --surface: #1a1a19;
+  --surface-2: #212120;
+  --surface-creuse: #161615;
+  --plan: #0d0d0d;
+  --encre-1: #ffffff;
+  --encre-2: #c3c2b7;
+  --encre-3: #898781;
+  --filet: #2c2c2a;
+  --ligne-base: #383835;
+  --bord: rgba(255, 255, 255, 0.09);
+  --bord-creux: #242422;
+  /* Série (magnitude — une seule teinte, pas sombre validé) */
+  --serie: #3987e5;
+  --serie-fonce: #6da7ec;   /* accent lisible sur fond sombre */
+  --serie-nuit: #9ec5f4;    /* texte accentué fort */
+  --serie-pale: #1d3a5f;    /* fond teinté appuyé (nav active, avatar) */
+  --serie-brume: #16283f;   /* fond teinté léger */
+  /* Statuts réservés (mêmes hex, tous ≥ 3:1 sur surface sombre) */
+  --statut-bon: #0ca30c;
+  --statut-attention: #fab219;
+  --statut-serieux: #ec835a;
+  --statut-critique: #d03b3b;
+  --texte-succes: #0ca30c;
+  --teinte-bon: rgba(12, 163, 12, 0.16);
+  --teinte-attention: rgba(250, 178, 25, 0.15);
+  --teinte-serieux: rgba(236, 131, 90, 0.15);
+  --teinte-critique: rgba(208, 59, 59, 0.18);
+  --teinte-neutre: #232322;
+  /* Avertissements */
+  --info-bg: #16283f;    --info-texte: #9ec5f4;  --info-bord: #1d3a5f;
+  --gel-bg: #232322;     --gel-texte: #c3c2b7;   --gel-bord: #2c2c2a;
+  --err-bg: #351515;     --err-texte: #f0a2a2;   --err-bord: #5c2424;
+  --ok-bg: #11290f;      --ok-texte: #5fce5f;    --ok-bord: #1f4a1c;
+  /* Divers */
+  --gel-a: #1f1f1e;      --gel-b: #191918;
+  --bulle-bg: #f4f4f1;   --bulle-texte: #0b0b0b;
+  --bandeau-bg: #2a2205; --bandeau-texte: #e5c765; --bandeau-bord: #4a3d10;
+  --halo-1: rgba(29, 58, 95, 0.55);
+  --halo-2: rgba(22, 40, 63, 0.5);
+  /* Espacements, rayons, ombres, transitions */
+  --e1: 4px; --e2: 8px; --e3: 12px; --e4: 16px; --e5: 24px; --e6: 32px;
+  --r-s: 8px; --r-m: 12px; --r-l: 16px;
+  --ombre-1: 0 1px 2px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --ombre-2: 0 4px 10px rgba(0, 0, 0, 0.4), 0 12px 28px rgba(0, 0, 0, 0.45);
+  --ombre-3: 0 18px 55px rgba(0, 0, 0, 0.6);
+  --transition: 0.16s ease;
+  font-size: 16px;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --surface: #fcfcfb;
+  --surface-2: #f8f8f5;
+  --surface-creuse: #f4f3ef;
+  --plan: #f6f6f2;
+  --encre-1: #0b0b0b;
+  --encre-2: #52514e;
+  --encre-3: #898781;
+  --filet: #e1e0d9;
+  --ligne-base: #c3c2b7;
+  --bord: rgba(11, 11, 11, 0.08);
+  --bord-creux: #e7e6df;
+  --serie: #2a78d6;
+  --serie-fonce: #1c5cab;
+  --serie-nuit: #104281;
+  --serie-pale: #cde2fb;
+  --serie-brume: #eaf2fc;
+  --texte-succes: #006300;
+  --teinte-bon: rgba(12, 163, 12, 0.11);
+  --teinte-attention: rgba(250, 178, 25, 0.16);
+  --teinte-serieux: rgba(236, 131, 90, 0.14);
+  --teinte-critique: rgba(208, 59, 59, 0.10);
+  --teinte-neutre: #f1f0ec;
+  --info-bg: #eaf2fc;    --info-texte: #104281;  --info-bord: #cde2fb;
+  --gel-bg: #f4f3f0;     --gel-texte: #52514e;   --gel-bord: #e1e0d9;
+  --err-bg: #fdf1f1;     --err-texte: #8c1f1f;   --err-bord: #f2c9c9;
+  --ok-bg: #ecf7ec;      --ok-texte: #006300;    --ok-bord: #cfe8cf;
+  --gel-a: #f7f6f3;      --gel-b: #efeeea;
+  --bulle-bg: #0b0b0b;   --bulle-texte: #ffffff;
+  --bandeau-bg: #fff6d8; --bandeau-texte: #6b5300; --bandeau-bord: #eddfa3;
+  --halo-1: #eaf2fc;
+  --halo-2: #eef4fb;
+  --ombre-1: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.07);
+  --ombre-2: 0 4px 10px rgba(16, 24, 40, 0.06), 0 12px 28px rgba(16, 24, 40, 0.09);
+  --ombre-3: 0 18px 55px rgba(11, 30, 60, 0.25);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--plan);
+  color: var(--encre-1);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { margin: 0 0 var(--e3); line-height: 1.25; letter-spacing: -0.01em; }
+h1 { font-size: 1.4rem; font-weight: 750; }
+h2 { font-size: 1.02rem; font-weight: 700; }
+p { margin: 0 0 var(--e3); }
+a { color: var(--serie-fonce); }
+:focus-visible { outline: 2px solid var(--serie-fonce); outline-offset: 2px; border-radius: var(--r-s); }
+svg.ic { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---- Bandeau maquette ---- */
+.bandeau-maquette {
+  background: var(--bandeau-bg);
+  border-bottom: 1px solid var(--bandeau-bord);
+  color: var(--bandeau-texte);
+  font-size: 0.78rem;
+  padding: 7px var(--e4);
+  text-align: center;
+}
+
+/* ================= ÉCRAN DE CONNEXION ================= */
+.ecran-connexion {
+  min-height: calc(100vh - 34px);
+  display: grid;
+  place-items: center;
+  padding: var(--e5);
+  background:
+    radial-gradient(1100px 520px at 12% -10%, var(--halo-1) 0%, rgba(0, 0, 0, 0) 60%),
+    radial-gradient(900px 480px at 105% 110%, var(--halo-2) 0%, rgba(0, 0, 0, 0) 55%),
+    var(--plan);
+}
+.carte-connexion {
+  width: min(430px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-l);
+  box-shadow: var(--ombre-2);
+  padding: 40px 36px 30px;
+}
+.logo-cra {
+  display: inline-grid;
+  place-items: center;
+  width: 56px; height: 56px;
+  line-height: 1;
+  background: linear-gradient(140deg, #2a78d6 0%, #104281 100%);
+  border-radius: 15px;
+  box-shadow: 0 6px 16px rgba(16, 66, 129, 0.5);
+  margin-bottom: var(--e4);
+}
+.logo-cra svg, .marque-logo svg { width: 78%; height: 78%; display: block; }
+.carte-connexion h1 { font-size: 1.3rem; margin-bottom: 4px; }
+.sous-titre-connexion { color: var(--encre-3); font-size: 0.86rem; margin-bottom: var(--e5); }
+.demo-comptes { margin-top: var(--e5); border-top: 1px solid var(--filet); padding-top: var(--e4); }
+.demo-comptes p { color: var(--encre-3); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 650; margin-bottom: var(--e3); }
+.puce-demo {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%;
+  font: inherit; font-size: 0.87rem; font-weight: 600;
+  color: var(--encre-1);
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--filet);
+  border-radius: var(--r-m);
+  padding: 8px 12px;
+  margin-bottom: var(--e2);
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition), transform var(--transition);
+}
+.puce-demo:hover { border-color: var(--serie); background: var(--serie-brume); transform: translateY(-1px); }
+.puce-demo .role-hint { margin-left: auto; color: var(--encre-3); font-size: 0.74rem; font-weight: 500; }
+
+/* ================= COQUE DE L'APPLICATION ================= */
+.app-coque { display: flex; min-height: calc(100vh - 34px); }
+
+/* ---- Barre latérale ---- */
+.lateral {
+  width: 236px;
+  flex: none;
+  background: var(--surface);
+  border-right: 1px solid var(--filet);
+  display: flex;
+  flex-direction: column;
+  padding: var(--e4) var(--e3);
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: calc(100vh - 34px);
+}
+.marque { display: flex; align-items: center; gap: 10px; padding: 2px 8px 14px; border-bottom: 1px solid var(--filet); margin-bottom: var(--e3); }
+.marque-logo {
+  display: inline-grid; place-items: center;
+  width: 40px; height: 40px; flex: none;
+  line-height: 1;
+  background: linear-gradient(140deg, #2a78d6 0%, #104281 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(16, 66, 129, 0.45);
+}
+.marque div strong { display: block; font-size: 0.92rem; letter-spacing: -0.01em; }
+.marque div span { display: block; font-size: 0.68rem; color: var(--encre-3); }
+.onglets { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; flex: 1; }
+.onglets button {
+  display: flex; align-items: center; gap: 10px;
+  appearance: none; background: none; border: none;
+  font: inherit; font-size: 0.88rem; font-weight: 550;
+  color: var(--encre-2);
+  padding: 9px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition), color var(--transition);
+}
+.onglets button:hover { background: var(--teinte-neutre); color: var(--encre-1); }
+.onglets button[aria-current="page"] {
+  background: var(--serie-brume);
+  color: var(--serie-nuit);
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 var(--serie-fonce);
+}
+.lateral-pied { border-top: 1px solid var(--filet); padding-top: var(--e3); margin-top: var(--e3); }
+.carte-utilisateur { display: flex; align-items: center; gap: 10px; padding: 2px 6px; }
+.actions-utilisateur {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 8px;
+  padding: 0 4px;
+}
+.cu-texte { min-width: 0; flex: 1; }
+.cu-texte strong { display: block; font-size: 0.84rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.avatar {
+  display: inline-grid; place-items: center;
+  width: 34px; height: 34px; flex: none;
+  border-radius: 999px;
+  background: var(--serie-pale);
+  color: var(--serie-nuit);
+  font-size: 0.74rem; font-weight: 750;
+}
+.avatar-s { width: 28px; height: 28px; font-size: 0.66rem; }
+.pastille-role {
+  display: inline-block;
+  font-size: 0.62rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--serie-nuit);
+  background: var(--serie-brume);
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin-top: 2px;
+}
+.btn-icone {
+  appearance: none; border: none; background: none;
+  color: var(--encre-3);
+  padding: 7px; border-radius: 9px; cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+.btn-icone:hover { background: var(--teinte-neutre); color: var(--encre-1); }
+.btn-icone.deconnexion:hover { background: var(--teinte-critique); color: var(--statut-critique); }
+
+/* ---- Zone principale ---- */
+.principal { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.entete-haut { display: flex; align-items: center; justify-content: flex-end; padding: 10px var(--e5) 0; }
+.entete-haut .meta { color: var(--encre-3); font-size: 0.8rem; }
+.contenu { max-width: 1120px; width: 100%; margin: 0 auto; padding: var(--e3) var(--e5) 80px; }
+.entete-vue { display: flex; align-items: center; gap: var(--e3); flex-wrap: wrap; margin: var(--e3) 0 var(--e4); }
+.entete-vue h1 { margin: 0; }
+.espace { flex: 1; }
+
+/* ---- Cartes ---- */
+.carte {
+  background: var(--surface);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-l);
+  box-shadow: var(--ombre-1);
+  padding: var(--e5);
+  margin-bottom: var(--e4);
+}
+.carte h2 { margin-bottom: var(--e4); }
+
+/* ---- Tuiles KPI ---- */
+.tuiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--e3); margin-bottom: var(--e4); }
+.tuile {
+  background: var(--surface);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-l);
+  box-shadow: var(--ombre-1);
+  padding: 18px 20px 16px;
+  transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
+}
+.tuile:hover { box-shadow: var(--ombre-2); transform: translateY(-1px); border-color: var(--ligne-base); }
+.tuile .libelle { color: var(--encre-3); font-size: 0.72rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.tuile .valeur { font-size: 1.85rem; font-weight: 750; letter-spacing: -0.02em; line-height: 1.1; }
+.tuile .detail { color: var(--encre-3); font-size: 0.76rem; margin-top: 4px; }
+
+/* ---- Badges ---- */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.72rem; font-weight: 650;
+  color: var(--encre-2);
+  border-radius: 999px;
+  padding: 2px 9px 2px 7px;
+  background: var(--teinte-neutre);
+  white-space: nowrap;
+}
+.badge .point { width: 7px; height: 7px; border-radius: 999px; flex: none; }
+.badge-complete { background: var(--teinte-bon); }
+.badge-complete .point { background: var(--statut-bon); }
+.badge-partielle { background: var(--teinte-attention); }
+.badge-partielle .point { background: var(--statut-attention); }
+.badge-vide { background: var(--teinte-serieux); }
+.badge-vide .point { background: var(--statut-serieux); }
+.badge-neutre .point { background: var(--ligne-base); }
+.badge-critique { background: var(--teinte-critique); }
+.badge-critique .point { background: var(--statut-critique); }
+
+/* ================= CALENDRIER ================= */
+.cal-outils { display: flex; align-items: center; gap: var(--e2); margin-bottom: var(--e4); flex-wrap: wrap; }
+.cal-outils .mois { font-weight: 750; font-size: 1.06rem; min-width: 158px; text-align: center; text-transform: capitalize; letter-spacing: -0.01em; }
+.cal-legende { display: flex; gap: var(--e2); flex-wrap: wrap; margin-top: var(--e4); }
+.cal-grille { display: grid; grid-template-columns: repeat(7, 1fr); gap: 7px; }
+.cal-entete-jour { text-align: center; font-size: 0.68rem; font-weight: 700; color: var(--encre-3); text-transform: uppercase; letter-spacing: 0.07em; padding-bottom: 4px; }
+.cal-jour {
+  appearance: none;
+  font: inherit;
+  color: var(--encre-1);
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--filet);
+  border-radius: var(--r-m);
+  min-height: 88px;
+  padding: 8px 9px 9px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition), background var(--transition);
+}
+.cal-jour:hover { border-color: var(--serie); box-shadow: var(--ombre-1); transform: translateY(-1px); }
+.cal-jour .num { font-weight: 750; font-size: 0.9rem; letter-spacing: -0.01em; }
+.cal-jour .minutes { font-size: 0.7rem; color: var(--encre-2); font-variant-numeric: tabular-nums; }
+.cal-jour .etat { margin-top: auto; }
+.cal-jour .etat .badge { padding: 1px 7px 1px 6px; font-size: 0.66rem; }
+.cal-jauge {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--teinte-neutre);
+  overflow: hidden;
+  margin-top: 2px;
+}
+.cal-jauge i { display: block; height: 100%; background: var(--serie); border-radius: 999px; }
+.cal-jour.hors-mois { visibility: hidden; }
+.cal-jour.weekend, .cal-jour.ferie { background: var(--surface-creuse); border-color: var(--bord-creux); }
+.cal-jour.weekend .num, .cal-jour.ferie .num { color: var(--encre-3); }
+.cal-jour.gele { background: repeating-linear-gradient(135deg, var(--gel-a), var(--gel-a) 7px, var(--gel-b) 7px, var(--gel-b) 9px); }
+.cal-jour.aujourdhui { border: 2px solid var(--serie-fonce); box-shadow: 0 0 0 3px var(--serie-brume); }
+.cal-jour.selectionne {
+  border: 2px solid var(--serie-fonce);
+  background: var(--serie-brume);
+}
+.cal-jour.selectionne .num::before { content: "✓ "; color: var(--serie-fonce); }
+.cal-jour .marque-extra { position: absolute; top: 8px; right: 9px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.03em; color: var(--serie-nuit); background: var(--serie-pale); border-radius: 6px; padding: 1px 5px; }
+
+/* ---- Sélection multi-jours ---- */
+.barre-selection {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  flex-wrap: wrap;
+  background: var(--serie-brume);
+  border: 1px solid var(--serie-pale);
+  border-radius: var(--r-m);
+  padding: 10px 14px;
+  margin-bottom: var(--e3);
+  font-size: 0.85rem;
+  box-shadow: var(--ombre-1);
+}
+.barre-selection .compteur { font-weight: 750; color: var(--serie-nuit); }
+.panneau-recurrence {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  border: 1px dashed var(--serie);
+  border-radius: var(--r-m);
+  background: var(--surface);
+  padding: 10px 14px;
+  margin-bottom: var(--e3);
+  font-size: 0.85rem;
+}
+.case-jour {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin: 0; font-weight: 550; font-size: 0.8rem;
+  color: var(--encre-2);
+  border: 1px solid var(--filet); border-radius: 8px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition), color var(--transition);
+}
+.case-jour:hover { border-color: var(--serie); color: var(--encre-1); }
+.case-jour:has(input:checked) { background: var(--serie-brume); border-color: var(--serie); color: var(--serie-nuit); font-weight: 700; }
+.case-jour input { width: auto; margin: 0; accent-color: var(--serie); }
+.rec-date { display: inline-flex; align-items: center; gap: 5px; margin: 0; font-weight: 500; }
+.rec-date input { width: auto; }
+.rapport-lot { margin-top: var(--e3); }
+.rapport-lot ul { margin: 6px 0 0 18px; padding: 0; }
+
+/* ================= TABLEAUX ================= */
+.table-envel { overflow-x: auto; border-radius: var(--r-s); }
+table.donnees { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+table.donnees th {
+  text-align: left;
+  color: var(--encre-3);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--ligne-base);
+  padding: var(--e2) 10px;
+  white-space: nowrap;
+}
+table.donnees td { border-bottom: 1px solid var(--filet); padding: 10px; vertical-align: middle; }
+table.donnees tbody tr { transition: background var(--transition); }
+table.donnees tbody tr:hover td { background: var(--surface-2); }
+table.donnees tr:last-child td { border-bottom: none; }
+table.donnees td.num, table.donnees th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---- Barres horizontales (magnitude — une seule teinte) ---- */
+.viz-barres { display: grid; gap: 10px; }
+.viz-ligne { display: grid; grid-template-columns: 150px 1fr 78px; align-items: center; gap: var(--e3); }
+.viz-ligne .etiquette { font-size: 0.84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.viz-ligne .valeur { font-size: 0.8rem; text-align: right; color: var(--encre-2); font-variant-numeric: tabular-nums; font-weight: 600; }
+.viz-piste { background: var(--teinte-neutre); border-radius: 999px; height: 12px; position: relative; overflow: hidden; }
+.viz-barre {
+  position: absolute; inset: 0 auto 0 0;
+  background: var(--serie);
+  border-radius: 999px;
+  min-width: 4px;
+  transition: background var(--transition);
+}
+.viz-barre:hover, .viz-barre.survolee { background: var(--serie-fonce); }
+.jauge { width: 130px; height: 8px; border-radius: 999px; background: var(--teinte-neutre); position: relative; display: inline-block; vertical-align: middle; overflow: hidden; }
+.jauge > i { position: absolute; inset: 0 auto 0 0; background: var(--serie); border-radius: 999px; }
+
+/* ---- Info-bulle ---- */
+.info-bulle {
+  position: fixed;
+  z-index: 60;
+  background: var(--bulle-bg);
+  color: var(--bulle-texte);
+  font-size: 0.75rem;
+  border-radius: var(--r-s);
+  padding: 6px 10px;
+  pointer-events: none;
+  max-width: 260px;
+  display: none;
+  box-shadow: var(--ombre-2);
+}
+
+/* ================= FORMULAIRES ================= */
+label { display: block; font-size: 0.78rem; font-weight: 650; color: var(--encre-2); margin-bottom: 4px; }
+input, select, textarea {
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--encre-1);
+  background: var(--surface-2);
+  border: 1px solid var(--ligne-base);
+  border-radius: 9px;
+  padding: 8px 11px;
+  width: 100%;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+input:hover, select:hover, textarea:hover { border-color: var(--encre-3); }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--serie); box-shadow: 0 0 0 3px var(--serie-brume); }
+input:disabled, select:disabled, textarea:disabled { background: var(--teinte-neutre); color: var(--encre-3); border-color: var(--filet); }
+.champ { margin-bottom: var(--e3); }
+.champ .aide { font-size: 0.74rem; color: var(--encre-3); margin-top: 3px; }
+.champ.en-erreur input, .champ.en-erreur select, .champ.en-erreur textarea { border-color: var(--statut-critique); }
+.msg-erreur-champ { color: var(--statut-critique); font-size: 0.76rem; margin-top: 3px; }
+.obligatoire::after { content: " *"; color: var(--statut-critique); }
+
+/* ================= BOUTONS ================= */
+.btn {
+  appearance: none;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 650;
+  border-radius: 9px;
+  border: 1px solid var(--ligne-base);
+  background: var(--surface-2);
+  color: var(--encre-1);
+  padding: 8px 15px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: background var(--transition), border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+.btn:hover { background: var(--teinte-neutre); border-color: var(--encre-3); }
+.btn:active { transform: translateY(1px); }
+.btn-primaire {
+  background: linear-gradient(180deg, #3987e5 0%, #1c5cab 100%);
+  border-color: #1c5cab;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+.btn-primaire:hover { background: linear-gradient(180deg, #4b93e9 0%, #256abf 100%); border-color: #256abf; }
+.btn-danger { color: var(--statut-critique); border-color: rgba(208, 59, 59, 0.5); background: transparent; }
+.btn-danger:hover { background: var(--teinte-critique); border-color: var(--statut-critique); }
+.btn-discret { border-color: transparent; background: none; color: var(--serie-fonce); padding: 5px 9px; }
+.btn-discret:hover { background: var(--serie-brume); border-color: transparent; }
+.btn-petit { font-size: 0.78rem; padding: 5px 11px; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* ================= BOÎTES DE DIALOGUE ================= */
+dialog {
+  border: 1px solid var(--bord);
+  border-radius: var(--r-l);
+  box-shadow: var(--ombre-3);
+  padding: 0;
+  width: min(780px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  background: var(--surface);
+  color: var(--encre-1);
+}
+dialog::backdrop { background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(2px); }
+.dlg-entete { display: flex; align-items: center; gap: var(--e3); padding: 18px var(--e5) 14px; border-bottom: 1px solid var(--filet); }
+.dlg-entete h2 { margin: 0; font-size: 1.05rem; }
+.dlg-entete h2::first-letter { text-transform: uppercase; }
+.dlg-corps { padding: var(--e5); overflow-y: auto; max-height: calc(100vh - 230px); }
+.dlg-pied {
+  display: flex; justify-content: flex-end; gap: var(--e2);
+  padding: 14px var(--e5);
+  border-top: 1px solid var(--filet);
+  background: var(--surface-2);
+  border-radius: 0 0 var(--r-l) var(--r-l);
+}
+
+/* ---- Éditeur de jour ---- */
+.bloc-rubrique { border: 1px solid var(--filet); border-radius: var(--r-m); margin-bottom: var(--e4); overflow: hidden; }
+.bloc-rubrique > .bloc-titre {
+  display: flex; align-items: center; gap: var(--e2);
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--filet);
+  font-weight: 700; font-size: 0.84rem;
+}
+.bloc-rubrique .bloc-corps { padding: var(--e3) var(--e4); }
+.ligne-saisie {
+  display: grid;
+  grid-template-columns: 92px 1fr 1fr 2fr auto;
+  gap: var(--e2);
+  align-items: start;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--filet);
+}
+.ligne-saisie:last-of-type { border-bottom: none; }
+.ligne-saisie .actions-ligne { display: flex; gap: 2px; padding-top: 21px; }
+.ligne-astreinte { grid-template-columns: 92px 1fr 2fr auto; }
+.sous-champs-astreinte { grid-column: 1 / -1; display: grid; grid-template-columns: 170px 1fr; gap: var(--e2); padding: 0 0 var(--e2); }
+.total-jour {
+  display: flex; gap: var(--e4); align-items: baseline;
+  font-size: 0.9rem; font-variant-numeric: tabular-nums;
+  padding: 10px 0 0;
+}
+.total-jour strong { font-size: 1.1rem; }
+.avert { border-radius: var(--r-m); padding: 10px 14px; font-size: 0.84rem; margin-bottom: var(--e3); }
+.avert-info { background: var(--info-bg); color: var(--info-texte); border: 1px solid var(--info-bord); }
+.avert-gel { background: var(--gel-bg); color: var(--gel-texte); border: 1px solid var(--gel-bord); }
+.avert-erreur { background: var(--err-bg); color: var(--err-texte); border: 1px solid var(--err-bord); }
+.avert-succes { background: var(--ok-bg); color: var(--ok-texte); border: 1px solid var(--ok-bord); }
+
+/* ---- Grilles utilitaires ---- */
+.grille-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e4); }
+.grille-filtres { display: flex; gap: var(--e3); flex-wrap: wrap; align-items: end; margin-bottom: var(--e4); }
+.grille-filtres .champ { margin-bottom: 0; min-width: 150px; }
+.texte-muet { color: var(--encre-3); font-size: 0.8rem; }
+.texte-secondaire { color: var(--encre-2); }
+.mono-nombre { font-variant-numeric: tabular-nums; }
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 940px) {
+  .app-coque { flex-direction: column; }
+  .lateral {
+    width: 100%; height: auto; position: static;
+    flex-direction: row; align-items: center;
+    padding: var(--e2) var(--e3);
+    border-right: none; border-bottom: 1px solid var(--filet);
+    gap: var(--e2);
+  }
+  .marque { border: none; margin: 0; padding: 0 6px 0 0; }
+  .marque div { display: none; }
+  .onglets { flex-direction: row; overflow-x: auto; flex: 1; }
+  .onglets button { white-space: nowrap; padding: 7px 10px; }
+  .onglets button[aria-current="page"] { box-shadow: inset 0 -3px 0 var(--serie-fonce); }
+  .lateral-pied { border: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 4px; }
+  .carte-utilisateur .cu-texte { display: none; }
+  .actions-utilisateur { margin-top: 0; padding: 0; }
+  .actions-utilisateur .espace { display: none; }
+  .entete-haut { display: none; }
+  .grille-2 { grid-template-columns: 1fr; }
+  .cal-jour { min-height: 64px; padding: 5px 6px; }
+  .cal-jour .minutes { display: none; }
+  .cal-jour .etat .badge { font-size: 0.58rem; padding: 1px 5px; }
+  .ligne-saisie { grid-template-columns: 1fr 1fr; }
+  .ligne-saisie .actions-ligne { padding-top: 0; }
+  .viz-ligne { grid-template-columns: 104px 1fr 64px; }
+  .contenu { padding: var(--e3) var(--e3) 60px; }
+}
+/* ---- Mouvements sobres (désactivés si l'utilisateur préfère) ---- */
+dialog[open] { animation: apparition-dlg 0.18s ease; }
+@keyframes apparition-dlg {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+}
+.avert { animation: apparition-avert 0.2s ease; }
+@keyframes apparition-avert {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+@media print {
+  .lateral, .entete-haut, .bandeau-maquette, .btn, .barre-selection, .panneau-recurrence { display: none !important; }
+  .carte { box-shadow: none; }
+}
+
+/* ===== Vues manager / admin (incréments 2 et 3) ===== */
+.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.tbl th, .tbl td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--filet); vertical-align: middle; }
+.tbl th { color: var(--encre-2); font-weight: 600; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.02em; }
+.tbl tbody tr:hover td { background: var(--surface-2); }
+.tbl td.num, .tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.in-select, .in-txt, .in-date { width: 100%; padding: 8px 10px; border: 1px solid var(--ligne-base); border-radius: var(--r-s); background: var(--surface); color: var(--encre-1); font: inherit; }
+.filtres { display: flex; flex-wrap: wrap; gap: var(--e3); align-items: flex-end; }
+.filtres .champ { margin-bottom: 0; min-width: 140px; }
+.kpis { display: flex; flex-wrap: wrap; gap: var(--e3); margin-bottom: var(--e4); }
+.kpi { flex: 1; min-width: 120px; background: var(--surface-2); border: 1px solid var(--bord); border-radius: var(--r-m); padding: var(--e3) var(--e4); }
+.kpi .v { font-size: 1.5rem; font-weight: 700; }
+.kpi .l { color: var(--encre-2); font-size: 0.8rem; }
+.pastille { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
+.p-ok { background: var(--teinte-bon); color: var(--texte-succes); }
+.p-retard { background: var(--teinte-critique); color: var(--statut-critique); }
+.p-neutre { background: var(--teinte-neutre); color: var(--encre-2); }
+.actions-tbl { display: flex; gap: 6px; flex-wrap: wrap; }
+.sous-carte { margin-bottom: var(--e4); }
+.sous-carte h3 { margin: 0 0 var(--e3); font-size: 1rem; }
+.notif { position: fixed; right: 16px; bottom: 16px; z-index: 60; background: var(--bulle-bg); color: var(--bulle-texte); padding: 10px 16px; border-radius: var(--r-m); box-shadow: var(--ombre-2); font-size: 0.9rem; max-width: 340px; opacity: 0; transform: translateY(8px); transition: var(--transition); pointer-events: none; }
+.notif.on { opacity: 1; transform: none; }
+.notif.err { background: var(--err-bg); color: var(--err-texte); border: 1px solid var(--err-bord); }
+</style>
+</head>
+<body>
+
+<main id="ecran-connexion" class="ecran-connexion">
+  <button class="btn-icone" id="btn-theme-connexion" title="Basculer le thème clair / sombre"
+    aria-label="Basculer le thème clair ou sombre" style="position:absolute;top:14px;right:16px">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true" id="icone-theme-connexion"></svg>
+  </button>
+  <div class="carte-connexion">
+    <span class="logo-cra" aria-hidden="true"><svg viewBox="0 0 64 64" width="34" height="34"><circle cx="22" cy="14" r="9" fill="#0b0b0b"/><circle cx="46" cy="14" r="9" fill="#0b0b0b"/><circle cx="34" cy="34" r="22" fill="#fff"/><ellipse cx="25" cy="30" rx="6.5" ry="7.5" fill="#0b0b0b"/><ellipse cx="43" cy="30" rx="6.5" ry="7.5" fill="#0b0b0b"/><circle cx="26.5" cy="31.5" r="2.2" fill="#fff"/><circle cx="41.5" cy="31.5" r="2.2" fill="#fff"/><ellipse cx="34" cy="41" rx="4.5" ry="3.5" fill="#0b0b0b"/><path d="M30 47 Q34 50 38 47" stroke="#0b0b0b" stroke-width="2" fill="none" stroke-linecap="round"/><rect x="50" y="28" width="5" height="26" rx="2.5" fill="#1baf7a" transform="rotate(12 52 41)"/><rect x="49" y="33" width="7" height="2.5" rx="1.2" fill="#0e7a52" transform="rotate(12 52 41)"/><rect x="47.5" y="41" width="7" height="2.5" rx="1.2" fill="#0e7a52" transform="rotate(12 52 41)"/></svg></span>
+    <h1>Compte Rendu d'Activité</h1>
+    <p class="sous-titre-connexion">Connectez-vous pour saisir et suivre votre activité.</p>
+    <form id="form-connexion" novalidate>
+      <div class="champ">
+        <label for="cx-login" class="obligatoire">Identifiant</label>
+        <input id="cx-login" name="login" autocomplete="username" required>
+      </div>
+      <div class="champ">
+        <label for="cx-mdp" class="obligatoire">Mot de passe</label>
+        <input id="cx-mdp" name="mdp" type="password" autocomplete="current-password" required>
+      </div>
+      <p id="cx-erreur" class="msg-erreur-champ" role="alert" hidden></p>
+      <button type="submit" class="btn btn-primaire" id="btn-connexion">Se connecter</button>
+    </form>
+  </div>
+</main>
+
+<div id="app" hidden class="app-coque">
+  <aside class="lateral">
+    <div class="marque">
+      <span class="marque-logo" aria-hidden="true"><svg viewBox="0 0 64 64" width="26" height="26"><circle cx="22" cy="14" r="9" fill="#0b0b0b"/><circle cx="46" cy="14" r="9" fill="#0b0b0b"/><circle cx="34" cy="34" r="22" fill="#fff"/><ellipse cx="25" cy="30" rx="6.5" ry="7.5" fill="#0b0b0b"/><ellipse cx="43" cy="30" rx="6.5" ry="7.5" fill="#0b0b0b"/><circle cx="26.5" cy="31.5" r="2.2" fill="#fff"/><circle cx="41.5" cy="31.5" r="2.2" fill="#fff"/><ellipse cx="34" cy="41" rx="4.5" ry="3.5" fill="#0b0b0b"/><path d="M30 47 Q34 50 38 47" stroke="#0b0b0b" stroke-width="2" fill="none" stroke-linecap="round"/><rect x="50" y="28" width="5" height="26" rx="2.5" fill="#1baf7a" transform="rotate(12 52 41)"/></svg></span>
+      <div><strong>Compte rendu</strong><span>d'activité — équipe technique</span></div>
+    </div>
+    <nav class="onglets" id="onglets" aria-label="Navigation principale"></nav>
+    <div class="lateral-pied">
+      <div class="carte-utilisateur">
+        <span class="avatar" id="avatar-utilisateur" aria-hidden="true"></span>
+        <div class="cu-texte">
+          <strong id="top-utilisateur"></strong>
+          <span class="pastille-role" id="top-role"></span>
+        </div>
+      </div>
+      <div class="actions-utilisateur" role="toolbar" aria-label="Actions du compte">
+        <button class="btn-icone" id="btn-mon-mdp" title="Changer mon mot de passe" aria-label="Changer mon mot de passe">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3 21 2"/><path d="M16 7l3 3"/></svg>
+        </button>
+        <button class="btn-icone" id="btn-theme" title="Basculer le thème clair / sombre" aria-label="Basculer le thème clair ou sombre">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true" id="icone-theme"></svg>
+        </button>
+        <span class="espace"></span>
+        <button class="btn-icone deconnexion" id="btn-deconnexion" title="Se déconnecter" aria-label="Se déconnecter">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+  <div class="principal">
+    <header class="entete-haut"><span class="meta" id="top-date"></span></header>
+    <main class="contenu" id="contenu"></main>
+  </div>
+</div>
+
+<dialog id="dlg-jour" aria-labelledby="dlg-jour-titre">
+  <div class="dlg-entete">
+    <h2 id="dlg-jour-titre"></h2>
+    <span class="espace" style="flex:1"></span>
+    <span id="dlg-jour-etat"></span>
+  </div>
+  <div class="dlg-corps" id="dlg-jour-corps"></div>
+  <div class="dlg-pied">
+    <button class="btn" id="dlg-jour-fermer">Fermer</button>
+    <button class="btn btn-primaire" id="dlg-jour-enregistrer">Enregistrer</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-lot" aria-labelledby="dlg-lot-titre">
+  <div class="dlg-entete"><h2 id="dlg-lot-titre">Saisie sur plusieurs jours</h2></div>
+  <div class="dlg-corps">
+    <p id="dlg-lot-jours" class="texte-secondaire"></p>
+    <div class="champ">
+      <label for="lot-rubrique">Rubrique</label>
+      <select id="lot-rubrique">
+        <option value="ASTREINTE">Astreinte (période de plusieurs jours)</option>
+        <option value="NORMALE">Activité normale récurrente (réunion quotidienne…)</option>
+        <option value="HNO">HNO</option>
+      </select>
+      <p class="aide">Une ligne identique est créée pour chaque jour sélectionné, liée en série —
+        chaque jour reste ensuite modifiable individuellement.</p>
+    </div>
+    <div class="champ"><label for="lot-duree" class="obligatoire">Durée par jour (min)</label>
+      <input type="number" id="lot-duree" min="1" max="1440" step="5"></div>
+    <div class="champ" id="lot-champ-ttk"><label for="lot-ttk" class="obligatoire">TTK</label>
+      <select id="lot-ttk"></select></div>
+    <div class="champ" id="lot-champ-projet"><label for="lot-projet">Projet</label>
+      <select id="lot-projet"></select></div>
+    <div class="champ" id="lot-champ-change"><label for="lot-change" class="obligatoire">N° de change ou motif</label>
+      <input id="lot-change" maxlength="100"></div>
+    <div class="champ"><label for="lot-desc" class="obligatoire">Description</label>
+      <input id="lot-desc" maxlength="500" placeholder="ex. Astreinte infrastructure / Réunion quotidienne d'équipe"></div>
+    <div class="champ" id="lot-champ-resolu"><label for="lot-resolu" class="obligatoire">Résolu ?</label>
+      <select id="lot-resolu"><option value="">— choisir —</option><option value="oui">Oui</option><option value="non">Non</option></select></div>
+    <div class="champ" id="lot-champ-explication" hidden><label for="lot-explication" class="obligatoire">Explication de la résolution</label>
+      <input id="lot-explication" maxlength="500"></div>
+    <div id="lot-rapport" class="rapport-lot"></div>
+  </div>
+  <div class="dlg-pied">
+    <button class="btn" id="dlg-lot-fermer">Fermer</button>
+    <button class="btn btn-primaire" id="dlg-lot-appliquer">Créer les lignes</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-monmdp" aria-labelledby="dlg-monmdp-titre">
+  <div class="dlg-entete"><h2 id="dlg-monmdp-titre">Changer mon mot de passe</h2></div>
+  <div class="dlg-corps">
+    <p class="texte-secondaire" id="mm-contexte"></p>
+    <div class="champ">
+      <label for="mm-actuel" class="obligatoire">Mot de passe actuel</label>
+      <input id="mm-actuel" type="password" autocomplete="current-password" maxlength="100">
+    </div>
+    <div class="champ">
+      <label for="mm-nouveau" class="obligatoire">Nouveau mot de passe</label>
+      <input id="mm-nouveau" type="password" autocomplete="new-password" maxlength="100">
+      <p class="aide">12 caractères minimum.</p>
+    </div>
+    <div class="champ">
+      <label for="mm-confirme" class="obligatoire">Confirmer le nouveau mot de passe</label>
+      <input id="mm-confirme" type="password" autocomplete="new-password" maxlength="100">
+      <p class="msg-erreur-champ" id="mm-erreur" role="alert" hidden></p>
+    </div>
+    <p class="texte-muet">Mot de passe oublié (connexion impossible) : contactez l'administrateur.</p>
+  </div>
+  <div class="dlg-pied">
+    <button class="btn" id="dlg-monmdp-annuler">Annuler</button>
+    <button class="btn btn-primaire" id="dlg-monmdp-valider">Changer le mot de passe</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-confirm" aria-labelledby="dlg-confirm-titre">
+  <div class="dlg-entete"><h2 id="dlg-confirm-titre">Confirmer</h2></div>
+  <div class="dlg-corps"><p id="dlg-confirm-texte"></p></div>
+  <div class="dlg-pied">
+    <button class="btn" id="dlg-confirm-non">Annuler</button>
+    <button class="btn btn-danger" id="dlg-confirm-oui">Supprimer</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-saisie" aria-labelledby="ds-titre">
+  <div class="dlg-entete"><h2 id="ds-titre"></h2></div>
+  <div class="dlg-corps">
+    <div class="champ"><label id="ds-label" for="ds-input"></label><div id="ds-controle"></div></div>
+    <div class="avert avert-erreur" id="ds-erreur" hidden></div>
+  </div>
+  <div class="dlg-pied">
+    <button class="btn" id="ds-annuler">Annuler</button>
+    <button class="btn btn-primaire" id="ds-valider">Valider</button>
+  </div>
+</dialog>
+
+<script>
+"use strict";
+/* CRA - client web (increment 1 : technicien).
+   Toutes les donnees viennent de l'API ; les controles JS ne sont que du
+   confort d'affichage, le serveur revalide tout. */
+
+const $ = s => document.querySelector(s);
+
+/* ================= APPEL API ================= */
+
+class ErreurApi extends Error {
+  constructor(reponse, corps) {
+    super((corps && corps.message) || ("Erreur " + reponse.status));
+    this.statut = reponse.status;
+    this.code = (corps && corps.code) || "ERREUR";
+    this.details = (corps && corps.details) || [];
+    this.correlationId = corps && corps.correlationId;
+  }
+}
+
+async function api(chemin, options) {
+  const o = options || {};
+  const reponse = await fetch(chemin, {
+    method: o.methode || "GET",
+    headers: Object.assign(
+      { "X-CRA": "1" },
+      o.corps !== undefined ? { "Content-Type": "application/json" } : {}),
+    body: o.corps !== undefined ? JSON.stringify(o.corps) : undefined
+  });
+  if (reponse.status === 401 && chemin !== "/api/connexion" && chemin !== "/api/moi") {
+    afficherConnexion("Session expiree - reconnectez-vous.");
+    throw new ErreurApi(reponse, { code: "SESSION_EXPIREE", message: "Session expiree" });
+  }
+  let corps = null;
+  try { corps = await reponse.json(); } catch { /* reponse vide */ }
+  if (!reponse.ok) { throw new ErreurApi(reponse, corps); }
+  return corps;
+}
+
+/* ================= REGLES D'AFFICHAGE (miroir du serveur) ================= */
+
+function versIso(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function depuisIso(iso) { const [a, m, j] = iso.split("-").map(Number); return new Date(a, m - 1, j); }
+function ajouterMoisClamp(iso, n) {
+  const [a, m, j] = iso.split("-").map(Number);
+  const dernier = new Date(a, m - 1 + n + 1, 0).getDate();
+  return versIso(new Date(a, m - 1 + n, Math.min(j, dernier)));
+}
+function limiteModification(iso) { return ajouterMoisClamp(iso, etat.parametres.fenetreModificationMois); }
+function technicienPeutModifier(iso) { return AUJOURDHUI <= limiteModification(iso); }
+function estWeekend(iso) { const js = depuisIso(iso).getDay(); return js === 0 || js === 6; }
+function estFerie(iso) { return etat.feries.has(iso); }
+function estJourOuvre(iso) { return !estWeekend(iso) && !estFerie(iso); }
+
+function echap(t) {
+  return String(t == null ? "" : t)
+    .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+}
+function formatMinutes(min) {
+  const h = Math.floor(min / 60), r = min % 60;
+  if (min === 0) { return "0 min"; }
+  if (h === 0) { return r + " min"; }
+  return h + " h" + (r ? String(r).padStart(2, "0") : "");
+}
+function formatDateLongue(iso) {
+  return depuisIso(iso).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+}
+function formatDateCourte(iso) {
+  return depuisIso(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+function libelleMois(a, m) { return new Date(a, m, 1).toLocaleDateString("fr-FR", { month: "long", year: "numeric" }); }
+
+const AUJOURDHUI = versIso(new Date());
+const JOURS_SEMAINE = ["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."];
+
+/* ================= ETAT ================= */
+
+const etat = {
+  moi: null,
+  ttks: [], projets: [], feries: new Set(),
+  parametres: { minutesJourCible: 450, fenetreModificationMois: 1 },
+  vue: "calendrier",
+  cal: { a: 0, m: 0 },
+  joursMois: new Map(),           /* iso -> {minutesNormale, nbHno, nbAstreinte} */
+  selection: { active: false, jours: new Set(), recurrence: { jours: new Set(), du: "", au: "" } }
+};
+
+let brouillon = null; /* jour ouvert : {iso, jeton, editable, lignes[]} */
+
+/* ================= CONNEXION ================= */
+
+function afficherConnexion(message) {
+  etat.moi = null;
+  $("#app").hidden = true;
+  $("#ecran-connexion").hidden = false;
+  const zone = $("#cx-erreur");
+  zone.hidden = !message;
+  zone.textContent = message || "";
+}
+
+async function demarrer() {
+  majIconeTheme();
+  try {
+    etat.moi = await api("/api/moi");
+    await apresConnexion();
+  } catch {
+    afficherConnexion();
+  }
+}
+
+async function apresConnexion() {
+  const refs = await api("/api/referentiels");
+  etat.ttks = refs.ttks;
+  etat.projets = refs.projets;
+  etat.feries = new Set(refs.feries);
+  etat.parametres = { minutesJourCible: refs.minutesJourCible, fenetreModificationMois: refs.fenetreModificationMois };
+  const d = new Date();
+  etat.cal = { a: d.getFullYear(), m: d.getMonth() };
+  etat.selection = { active: false, jours: new Set(),
+    recurrence: { jours: new Set(), du: AUJOURDHUI, au: versIso(new Date(d.getFullYear(), d.getMonth() + 1, 0)) } };
+
+  $("#ecran-connexion").hidden = true;
+  $("#app").hidden = false;
+  $("#top-utilisateur").textContent = etat.moi.nom;
+  $("#top-role").textContent = (etat.moi.rolesAffiches && etat.moi.rolesAffiches[0]) || etat.moi.roles[0] || "?";
+  $("#avatar-utilisateur").textContent = etat.moi.nom.split(/\s+/).map(x => x[0]).join("").slice(0, 2).toUpperCase();
+  $("#top-date").textContent = "Aujourd'hui : " + formatDateLongue(AUJOURDHUI);
+
+  if (etat.moi.doitChangerMdp) {
+    ouvrirMonMdp("Votre mot de passe est provisoire : choisissez-en un nouveau pour continuer.");
+  }
+  etat.vue = vuesDisponibles()[0][0];
+  await rendreVue();
+}
+
+/* ================= NAVIGATION ================= */
+
+const ICONES = {
+  calendrier: '<path d="M7 2v3M17 2v3"/><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/>',
+  graphique: '<path d="M4 20v-8M10 20V4M16 20v-6"/><path d="M3 20h18"/>',
+  utilisateur: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+  reglage: '<circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/>'
+};
+function icone(nom) { return `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONES[nom] || ""}</svg>`; }
+
+function estRole(r) { return !!(etat.moi && etat.moi.roles && etat.moi.roles.includes(r)); }
+function vuesDisponibles() {
+  const v = [];
+  if (estRole("TECHNICIEN")) { v.push(["calendrier", "Mon calendrier", "calendrier"], ["recap", "Mon récapitulatif", "graphique"]); }
+  if (estRole("MANAGER")) { v.push(["mgr-tableau", "Tableau de bord", "graphique"], ["mgr-detail", "Détail & export", "calendrier"]); }
+  if (estRole("ADMIN")) { v.push(["adm-comptes", "Comptes", "utilisateur"], ["adm-ref", "Référentiels", "reglage"], ["adm-audit", "Journal", "graphique"]); }
+  return v.length ? v : [["vide", "—", "calendrier"]];
+}
+
+function rendreOnglets() {
+  $("#onglets").innerHTML = vuesDisponibles()
+    .map(([id, lib, ic]) => `<button data-vue="${id}" ${etat.vue === id ? 'aria-current="page"' : ""}>${icone(ic)}<span>${echap(lib)}</span></button>`)
+    .join("");
+}
+
+async function rendreVue() {
+  rendreOnglets();
+  switch (etat.vue) {
+    case "calendrier": return rendreCalendrier();
+    case "recap": return rendreRecap();
+    case "mgr-tableau": return rendreMgrTableau();
+    case "mgr-detail": return rendreMgrDetail();
+    case "adm-comptes": return rendreAdmComptes();
+    case "adm-ref": return rendreAdmRef();
+    case "adm-audit": return rendreAdmAudit();
+    default:
+      $("#contenu").innerHTML = `<div class="carte" style="margin-top:24px"><p class="texte-secondaire">Aucune vue disponible pour votre profil.</p></div>`;
+  }
+}
+
+/* ================= CALENDRIER ================= */
+
+async function chargerMois() {
+  const r = await api(`/api/calendrier/${etat.cal.a}/${etat.cal.m + 1}`);
+  etat.joursMois = new Map(r.jours.map(j => [j.date, j]));
+}
+
+function infosJour(iso) {
+  const agg = etat.joursMois.get(iso) || { minutesNormale: 0, nbHno: 0, nbAstreinte: 0 };
+  const ouvre = estJourOuvre(iso);
+  return {
+    minutesNormale: agg.minutesNormale, nbHno: agg.nbHno, nbAstreinte: agg.nbAstreinte,
+    ouvre, weekend: estWeekend(iso), ferie: estFerie(iso),
+    statut: ouvre ? (agg.minutesNormale >= etat.parametres.minutesJourCible ? "complete" : (agg.minutesNormale > 0 ? "partielle" : "vide")) : null,
+    gele: !technicienPeutModifier(iso)
+  };
+}
+
+function badgeJour(info, futur) {
+  if (!info.ouvre) {
+    return `<span class="badge badge-neutre"><span class="point"></span>${info.ferie ? "férié" : "week-end"}</span>`;
+  }
+  if (futur && info.minutesNormale === 0) {
+    return `<span class="badge badge-neutre"><span class="point"></span>à venir</span>`;
+  }
+  const map = { complete: ["badge-complete", "Complète"], partielle: ["badge-partielle", "Partielle"], vide: ["badge-vide", "Vide"] };
+  const [cls, lib] = map[info.statut];
+  return `<span class="badge ${cls}"><span class="point"></span>${lib}</span>`;
+}
+
+function grilleCalendrier() {
+  const { a, m } = etat.cal;
+  const premier = new Date(a, m, 1);
+  const decalage = (premier.getDay() + 6) % 7;
+  const nbJours = new Date(a, m + 1, 0).getDate();
+  const cible = etat.parametres.minutesJourCible;
+  let html = `<div class="cal-grille">` + JOURS_SEMAINE.map(j => `<div class="cal-entete-jour">${j}</div>`).join("");
+  for (let i = 0; i < decalage; i++) { html += `<div class="cal-jour hors-mois" aria-hidden="true"></div>`; }
+  for (let j = 1; j <= nbJours; j++) {
+    const iso = versIso(new Date(a, m, j));
+    const info = infosJour(iso);
+    const futur = iso > AUJOURDHUI;
+    const classes = ["cal-jour"];
+    if (info.weekend) { classes.push("weekend"); }
+    if (info.ferie) { classes.push("ferie"); }
+    if (info.gele) { classes.push("gele"); }
+    if (iso === AUJOURDHUI) { classes.push("aujourdhui"); }
+    if (etat.selection.active && etat.selection.jours.has(iso)) { classes.push("selectionne"); }
+    const extras = [];
+    if (info.gele) { extras.push("🔒"); }
+    if (info.nbHno) { extras.push("HNO"); }
+    if (info.nbAstreinte) { extras.push("AST"); }
+    const minutes = info.ouvre && !(futur && info.minutesNormale === 0)
+      ? `<span class="minutes">${info.minutesNormale} / ${cible} min</span>` : "";
+    const jauge = info.ouvre && !(futur && info.minutesNormale === 0)
+      ? `<span class="cal-jauge" aria-hidden="true"><i style="width:${Math.min(100, Math.round(info.minutesNormale / cible * 100))}%"></i></span>` : "";
+    const etiquette = formatDateLongue(iso) + (info.ouvre
+      ? (futur && info.minutesNormale === 0 ? " — à venir" : ` — ${info.minutesNormale} sur ${cible} minutes`)
+      : (info.ferie ? " — jour férié" : " — week-end")) + (info.gele ? " — journée verrouillée" : "");
+    html += `<button class="${classes.join(" ")}" data-jour="${iso}" aria-label="${echap(etiquette)}">
+      <span class="num">${j}</span>${minutes}${jauge}
+      <span class="etat">${badgeJour(info, futur)}</span>
+      ${extras.length ? `<span class="marque-extra">${extras.join(" · ")}</span>` : ""}
+    </button>`;
+  }
+  return html + `</div>`;
+}
+
+function barreSelectionHtml() {
+  const jours = [...etat.selection.jours].sort();
+  const n = jours.length;
+  const plage = n ? " — du " + formatDateCourte(jours[0]) + " au " + formatDateCourte(jours[n - 1]) : "";
+  const prefixeMois = etat.cal.a + "-" + String(etat.cal.m + 1).padStart(2, "0");
+  const horsMois = jours.filter(i => !i.startsWith(prefixeMois)).length;
+  const rec = etat.selection.recurrence;
+  const cases = [["1", "lun"], ["2", "mar"], ["3", "mer"], ["4", "jeu"], ["5", "ven"], ["6", "sam"], ["0", "dim"]]
+    .map(([v, l]) => `<label class="case-jour"><input type="checkbox" class="rec-jour" value="${v}" ${rec.jours.has(v) ? "checked" : ""}> ${l}</label>`).join("");
+  return `
+  <div class="barre-selection" role="region" aria-label="Sélection de plusieurs jours">
+    <span class="compteur">${n} jour(s) sélectionné(s)${plage}${horsMois ? ` <span class="texte-muet">(dont ${horsMois} hors du mois affiché)</span>` : ""}</span>
+    <span class="espace" style="flex:1"></span>
+    <button class="btn btn-petit" data-sel-rapide="ouvres">+ Jours ouvrés du mois</button>
+    <button class="btn btn-petit" data-sel-rapide="weekends">+ Week-ends du mois</button>
+    <button class="btn btn-petit" data-sel-rapide="effacer">Effacer</button>
+    <button class="btn btn-primaire btn-petit" data-ouvrir-lot ${n ? "" : "disabled"}>Saisir sur ces jours</button>
+  </div>
+  <div class="panneau-recurrence" role="group" aria-label="Récurrence sur une période">
+    <strong>Récurrence :</strong> ${cases}
+    <label class="rec-date">du <input type="date" id="rec-du" value="${rec.du}"></label>
+    <label class="rec-date">jusqu'au <input type="date" id="rec-au" value="${rec.au}"></label>
+    <button class="btn btn-petit" data-rec-ajouter>+ Ajouter à la sélection</button>
+  </div>`;
+}
+
+async function rendreCalendrier() {
+  await chargerMois();
+  const { a, m } = etat.cal;
+  const cible = etat.parametres.minutesJourCible;
+  let complets = 0, ecoules = 0;
+  const d = new Date(a, m, 1);
+  while (d.getMonth() === m) {
+    const iso = versIso(d);
+    if (iso >= AUJOURDHUI) { break; }
+    if (estJourOuvre(iso)) {
+      ecoules++;
+      if (infosJour(iso).statut === "complete") { complets++; }
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  $("#contenu").innerHTML = `
+  <div class="entete-vue">
+    <h1>Mon calendrier</h1><span class="espace"></span>
+    <span class="texte-muet">Objectif : ${cible} min par jour ouvré — modifiable jusqu'à ${etat.parametres.fenetreModificationMois} mois après la date</span>
+  </div>
+  <div class="carte">
+    <div class="cal-outils">
+      <button class="btn btn-petit" data-nav-cal="-1" aria-label="Mois précédent">←</button>
+      <span class="mois">${echap(libelleMois(a, m))}</span>
+      <button class="btn btn-petit" data-nav-cal="1" aria-label="Mois suivant">→</button>
+      <button class="btn btn-petit ${etat.selection.active ? "btn-primaire" : ""}" data-sel-mode aria-pressed="${etat.selection.active}">
+        ${etat.selection.active ? "Terminer la sélection" : "☑ Sélection multiple (astreinte, récurrence)"}</button>
+      <span class="espace" style="flex:1"></span>
+      <span class="texte-muet">${complets} / ${ecoules} journées écoulées complètes</span>
+    </div>
+    ${etat.selection.active ? barreSelectionHtml() : ""}
+    ${grilleCalendrier()}
+    <div class="cal-legende">
+      <span class="badge badge-complete"><span class="point"></span>Complète (${cible} min)</span>
+      <span class="badge badge-partielle"><span class="point"></span>Partielle</span>
+      <span class="badge badge-vide"><span class="point"></span>Vide (congé/absence présumé)</span>
+      <span class="badge badge-neutre"><span class="point"></span>Week-end / férié (HNO possible)</span>
+      <span class="badge badge-neutre"><span class="point"></span>🔒 Verrouillée</span>
+    </div>
+  </div>`;
+}
+
+/* ================= EDITEUR DE JOUR ================= */
+
+async function ouvrirJour(iso) {
+  const r = await api(`/api/saisies?du=${iso}&au=${iso}`);
+  brouillon = {
+    iso,
+    jeton: (r.jetons && r.jetons[iso]) || 0,
+    editable: technicienPeutModifier(iso),
+    lignes: r.lignes.map(l => Object.assign({}, l))
+  };
+  rendreEditeur();
+  $("#dlg-jour").showModal();
+}
+
+function optionsTtk(valeur) {
+  const opts = etat.ttks.filter(t => t.actif || t.id === valeur)
+    .map(t => `<option value="${t.id}" ${t.id === valeur ? "selected" : ""}>${echap(t.libelle)}${t.actif ? "" : " (désactivé)"}</option>`);
+  return `<option value="">— choisir —</option>` + opts.join("");
+}
+function optionsProjet(valeur) {
+  const opts = etat.projets.filter(p => p.actif || p.id === valeur)
+    .map(p => `<option value="${p.id}" ${p.id === valeur ? "selected" : ""}>${echap(p.libelle)}${p.actif ? "" : " (désactivé)"}</option>`);
+  return `<option value="">— aucun —</option>` + opts.join("");
+}
+
+function ligneHtml(l, dis) {
+  if (l.rubrique === "NORMALE") {
+    return `<div class="ligne-saisie" data-rubrique="NORMALE" data-groupe="${echap(l.groupeId || "")}">
+      <label>Durée (min)<input type="number" class="in-duree" min="1" max="${etat.parametres.minutesJourCible}" step="5" value="${l.dureeMinutes || ""}" ${dis}></label>
+      <label>TTK<select class="in-ttk" ${dis}>${optionsTtk(l.ttkId)}</select></label>
+      <label>Projet<select class="in-projet" ${dis}>${optionsProjet(l.projetId)}</select></label>
+      <label>Description<input class="in-desc" maxlength="500" value="${echap(l.description)}" ${dis}></label>
+      <div class="actions-ligne">${dis ? "" : `<button type="button" class="btn btn-discret btn-petit" data-dupliquer title="Dupliquer">⧉</button>
+        <button type="button" class="btn btn-discret btn-petit" data-suppr-ligne title="Supprimer">✕</button>`}</div>
+    </div>`;
+  }
+  if (l.rubrique === "HNO") {
+    return `<div class="ligne-saisie ligne-astreinte" data-rubrique="HNO" data-groupe="${echap(l.groupeId || "")}">
+      <label>Durée (min)<input type="number" class="in-duree" min="1" max="1440" step="5" value="${l.dureeMinutes || ""}" ${dis}></label>
+      <label style="grid-column:span 2">Description<input class="in-desc" maxlength="500" value="${echap(l.description)}" ${dis}></label>
+      <div class="actions-ligne">${dis ? "" : `<button type="button" class="btn btn-discret btn-petit" data-dupliquer title="Dupliquer">⧉</button>
+        <button type="button" class="btn btn-discret btn-petit" data-suppr-ligne title="Supprimer">✕</button>`}</div>
+    </div>`;
+  }
+  const resolu = l.estResolu === true ? "oui" : (l.estResolu === false ? "non" : "");
+  return `<div class="ligne-saisie ligne-astreinte" data-rubrique="ASTREINTE" data-groupe="${echap(l.groupeId || "")}">
+    <label>Durée (min)<input type="number" class="in-duree" min="1" max="1440" step="5" value="${l.dureeMinutes || ""}" ${dis}></label>
+    <label>N° de change ou motif<input class="in-change" maxlength="100" value="${echap(l.changeOuMotif || "")}" ${dis}></label>
+    <label>Description<input class="in-desc" maxlength="500" value="${echap(l.description)}" ${dis}></label>
+    <div class="actions-ligne">${dis ? "" : `<button type="button" class="btn btn-discret btn-petit" data-dupliquer title="Dupliquer">⧉</button>
+      <button type="button" class="btn btn-discret btn-petit" data-suppr-ligne title="Supprimer">✕</button>`}</div>
+    <div class="sous-champs-astreinte">
+      <label>Résolu ?<select class="in-resolu" ${dis}>
+        <option value="">— choisir —</option>
+        <option value="oui" ${resolu === "oui" ? "selected" : ""}>Oui</option>
+        <option value="non" ${resolu === "non" ? "selected" : ""}>Non</option>
+      </select></label>
+      <label class="wrap-explication" ${resolu === "oui" ? "" : "hidden"}>Explication de la résolution
+        <input class="in-explication" maxlength="500" value="${echap(l.resolutionCommentaire || "")}" ${dis}></label>
+    </div>
+  </div>`;
+}
+
+function rendreEditeur() {
+  const b = brouillon;
+  const info = infosJour(b.iso);
+  const dis = b.editable ? "" : "disabled";
+  $("#dlg-jour-titre").textContent = formatDateLongue(b.iso);
+  $("#dlg-jour-etat").innerHTML = badgeJour(info, b.iso > AUJOURDHUI);
+
+  let bandeaux = "";
+  if (!b.editable) {
+    bandeaux += `<div class="avert avert-gel">🔒 Journée verrouillée : la fenêtre de modification
+      (jusqu'au ${formatDateCourte(limiteModification(b.iso))} inclus) est dépassée.
+      Correction possible uniquement par l'administrateur.</div>`;
+  }
+  if (!info.ouvre) {
+    bandeaux += `<div class="avert avert-info">${info.ferie ? "Jour férié" : "Week-end"} :
+      pas d'activité normale — HNO et Astreinte restent disponibles.</div>`;
+  }
+  const groupes = [...new Set(b.lignes.filter(l => l.groupeId).map(l => l.groupeId))];
+  for (const g of groupes) {
+    bandeaux += `<div class="avert avert-info">Ce jour fait partie d'une <strong>série</strong>.
+      ${b.editable ? `<button type="button" class="btn btn-petit btn-danger" data-suppr-serie="${echap(g)}"
+        style="margin-left:8px">Supprimer toute la série…</button>` : ""}</div>`;
+  }
+
+  const normales = b.lignes.filter(l => l.rubrique === "NORMALE");
+  const hnos = b.lignes.filter(l => l.rubrique === "HNO");
+  const astreintes = b.lignes.filter(l => l.rubrique === "ASTREINTE");
+  const blocNormale = !info.ouvre ? "" : `
+    <section class="bloc-rubrique">
+      <div class="bloc-titre">Activité normale <span class="texte-muet">(objectif ${etat.parametres.minutesJourCible} min)</span>
+        <span class="espace"></span>${b.editable ? `<button type="button" class="btn btn-petit" data-ajout-ligne="NORMALE">+ Ajouter une ligne</button>` : ""}</div>
+      <div class="bloc-corps" data-bloc="NORMALE">
+        ${normales.map(l => ligneHtml(l, dis)).join("") || `<p class="texte-muet">Aucune ligne — journée à 0 min (congé/absence présumé).</p>`}
+        <div class="total-jour" id="total-normale"></div>
+      </div>
+    </section>`;
+
+  $("#dlg-jour-corps").innerHTML = `
+    ${bandeaux}
+    <div id="zone-erreurs"></div>
+    ${blocNormale}
+    <section class="bloc-rubrique">
+      <div class="bloc-titre">HNO <span class="texte-muet">(heures hors ouvré — hors objectif)</span>
+        <span class="espace"></span>${b.editable ? `<button type="button" class="btn btn-petit" data-ajout-ligne="HNO">+ Ajouter une ligne</button>` : ""}</div>
+      <div class="bloc-corps" data-bloc="HNO">
+        ${hnos.map(l => ligneHtml(l, dis)).join("") || `<p class="texte-muet">Aucune ligne HNO.</p>`}</div>
+    </section>
+    <section class="bloc-rubrique">
+      <div class="bloc-titre">Astreinte <span class="texte-muet">(n° de change ou motif + résolution)</span>
+        <span class="espace"></span>${b.editable ? `<button type="button" class="btn btn-petit" data-ajout-ligne="ASTREINTE">+ Ajouter une ligne</button>` : ""}</div>
+      <div class="bloc-corps" data-bloc="ASTREINTE">
+        ${astreintes.map(l => ligneHtml(l, dis)).join("") || `<p class="texte-muet">Aucune astreinte.</p>`}</div>
+    </section>`;
+  $("#dlg-jour-enregistrer").hidden = !b.editable;
+  majTotauxEditeur();
+}
+
+function majTotauxEditeur() {
+  const zone = $("#total-normale");
+  if (!zone) { return; }
+  let total = 0;
+  document.querySelectorAll('#dlg-jour-corps .ligne-saisie[data-rubrique="NORMALE"] .in-duree')
+    .forEach(i => { total += parseInt(i.value, 10) || 0; });
+  const cible = etat.parametres.minutesJourCible;
+  const reste = cible - total;
+  zone.innerHTML = `<span>Total : <strong class="mono-nombre">${total} min</strong> / ${cible}</span>
+    <span class="${reste < 0 ? "msg-erreur-champ" : "texte-muet"}">${reste > 0 ? "Reste " + reste + " min"
+      : (reste === 0 ? "Journée complète ✓" : "Dépassement de " + (-reste) + " min — à basculer en HNO")}</span>`;
+}
+
+function collecterBrouillon() {
+  const lignes = [];
+  document.querySelectorAll("#dlg-jour-corps .ligne-saisie").forEach(row => {
+    const val = s => { const el = row.querySelector(s); return el ? el.value : ""; };
+    const rub = row.dataset.rubrique;
+    const resolu = val(".in-resolu");
+    lignes.push({
+      rubrique: rub,
+      dureeMinutes: parseInt(val(".in-duree"), 10) || 0,
+      ttkId: rub === "NORMALE" ? (Number(val(".in-ttk")) || null) : null,
+      projetId: rub === "NORMALE" ? (Number(val(".in-projet")) || null) : null,
+      description: val(".in-desc").trim(),
+      changeOuMotif: rub === "ASTREINTE" ? val(".in-change").trim() : null,
+      estResolu: rub === "ASTREINTE" ? (resolu === "oui" ? true : (resolu === "non" ? false : null)) : null,
+      resolutionCommentaire: rub === "ASTREINTE" ? (val(".in-explication").trim() || null) : null,
+      groupeId: row.dataset.groupe || null
+    });
+  });
+  return lignes;
+}
+
+async function enregistrerJour() {
+  const bouton = $("#dlg-jour-enregistrer");
+  bouton.disabled = true;
+  try {
+    const r = await api(`/api/saisies/jour/${brouillon.iso}`, {
+      methode: "PUT",
+      corps: { jeton: brouillon.jeton, lignes: collecterBrouillon() }
+    });
+    brouillon.jeton = r.jeton;
+    $("#dlg-jour").close();
+    await rendreVue();
+  } catch (e) {
+    const zone = $("#zone-erreurs");
+    zone.innerHTML = `<div class="avert avert-erreur" role="alert"><strong>${echap(e.message)}</strong>
+      ${e.details && e.details.length ? `<ul style="margin:6px 0 0 18px;padding:0">${e.details.map(x => `<li>${echap(x)}</li>`).join("")}</ul>` : ""}</div>`;
+    if (typeof zone.scrollIntoView === "function") { zone.scrollIntoView({ block: "nearest" }); }
+  } finally {
+    bouton.disabled = false;
+  }
+}
+
+/* ================= SELECTION / LOT ================= */
+
+function joursSelectionnablesDuMois(filtre) {
+  const { a, m } = etat.cal;
+  const res = [];
+  const d = new Date(a, m, 1);
+  while (d.getMonth() === m) {
+    const iso = versIso(d);
+    if (technicienPeutModifier(iso) && filtre(iso)) { res.push(iso); }
+    d.setDate(d.getDate() + 1);
+  }
+  return res;
+}
+
+function majChampsLot() {
+  const rub = $("#lot-rubrique").value;
+  $("#lot-champ-ttk").hidden = rub !== "NORMALE";
+  $("#lot-champ-projet").hidden = rub !== "NORMALE";
+  $("#lot-champ-change").hidden = rub !== "ASTREINTE";
+  $("#lot-champ-resolu").hidden = rub !== "ASTREINTE";
+  $("#lot-champ-explication").hidden = rub !== "ASTREINTE" || $("#lot-resolu").value !== "oui";
+}
+
+function ouvrirLot() {
+  const jours = [...etat.selection.jours].sort();
+  if (!jours.length) { return; }
+  $("#dlg-lot-jours").textContent = jours.length + " jour(s) sélectionné(s) : " +
+    (jours.length <= 8 ? jours.map(formatDateCourte).join(", ")
+      : "du " + formatDateCourte(jours[0]) + " au " + formatDateCourte(jours[jours.length - 1]));
+  $("#lot-ttk").innerHTML = optionsTtk(null);
+  $("#lot-projet").innerHTML = optionsProjet(null);
+  $("#lot-rapport").innerHTML = "";
+  $("#dlg-lot-appliquer").hidden = false;
+  majChampsLot();
+  $("#dlg-lot").showModal();
+}
+
+async function appliquerLot() {
+  const rub = $("#lot-rubrique").value;
+  const resolu = $("#lot-resolu").value;
+  const bouton = $("#dlg-lot-appliquer");
+  bouton.disabled = true;
+  try {
+    const r = await api("/api/saisies/lot", {
+      methode: "POST",
+      corps: {
+        jours: [...etat.selection.jours].sort(),
+        ligne: {
+          rubrique: rub,
+          dureeMinutes: parseInt($("#lot-duree").value, 10) || 0,
+          ttkId: rub === "NORMALE" ? (Number($("#lot-ttk").value) || null) : null,
+          projetId: rub === "NORMALE" ? (Number($("#lot-projet").value) || null) : null,
+          description: $("#lot-desc").value.trim(),
+          changeOuMotif: rub === "ASTREINTE" ? $("#lot-change").value.trim() : null,
+          estResolu: rub === "ASTREINTE" ? (resolu === "oui" ? true : (resolu === "non" ? false : null)) : null,
+          resolutionCommentaire: rub === "ASTREINTE" ? ($("#lot-explication").value.trim() || null) : null
+        }
+      }
+    });
+    if (r.crees.length) {
+      etat.selection.jours.clear();
+      $("#dlg-lot-appliquer").hidden = true;
+    }
+    $("#lot-rapport").innerHTML = `
+      ${r.crees.length ? `<div class="avert avert-succes">${r.crees.length} ligne(s) créée(s)${r.crees.length > 1
+        ? " — série liée, supprimable en une fois depuis n'importe lequel de ses jours" : ""}.</div>` : ""}
+      ${r.refuses.length ? `<div class="avert ${r.crees.length ? "avert-gel" : "avert-erreur"}" role="alert">
+        <strong>${r.refuses.length} jour(s) non créé(s) :</strong>
+        <ul style="margin:6px 0 0 18px;padding:0">${r.refuses.map(x => `<li>${formatDateCourte(x.jour)} — ${echap(x.motif)}</li>`).join("")}</ul></div>` : ""}`;
+  } catch (e) {
+    $("#lot-rapport").innerHTML = `<div class="avert avert-erreur" role="alert"><strong>${echap(e.message)}</strong>
+      ${e.details && e.details.length ? `<ul style="margin:6px 0 0 18px;padding:0">${e.details.map(x => `<li>${echap(x)}</li>`).join("")}</ul>` : ""}</div>`;
+  } finally {
+    bouton.disabled = false;
+  }
+}
+
+/* ================= RECAPITULATIF ================= */
+
+async function rendreRecap() {
+  const { a, m } = etat.cal;
+  const du = versIso(new Date(a, m, 1));
+  const au = versIso(new Date(a, m + 1, 0));
+  const r = await api(`/api/saisies?du=${du}&au=${au}`);
+  const lignes = r.lignes;
+  const normales = lignes.filter(l => l.rubrique === "NORMALE");
+  const hno = lignes.filter(l => l.rubrique === "HNO");
+  const ast = lignes.filter(l => l.rubrique === "ASTREINTE");
+  const nonResolues = ast.filter(l => l.estResolu === false).length;
+
+  const parTtk = new Map();
+  normales.forEach(l => parTtk.set(l.ttkId, (parTtk.get(l.ttkId) || 0) + l.dureeMinutes));
+  const barres = [...parTtk.entries()]
+    .map(([id, v]) => ({ etiquette: (etat.ttks.find(t => t.id === id) || { libelle: "?" }).libelle, valeur: v }))
+    .sort((x, y) => y.valeur - x.valeur);
+  const max = Math.max(1, ...barres.map(b => b.valeur));
+
+  $("#contenu").innerHTML = `
+  <div class="entete-vue">
+    <h1>Mon récapitulatif</h1><span class="espace"></span>
+    <button class="btn btn-petit" data-nav-cal="-1">←</button>
+    <strong style="text-transform:capitalize">${echap(libelleMois(a, m))}</strong>
+    <button class="btn btn-petit" data-nav-cal="1">→</button>
+  </div>
+  <div class="tuiles">
+    <div class="tuile"><div class="valeur mono-nombre">${formatMinutes(normales.reduce((s, l) => s + l.dureeMinutes, 0))}</div>
+      <div class="libelle">Activité normale saisie</div></div>
+    <div class="tuile"><div class="valeur mono-nombre">${formatMinutes(hno.reduce((s, l) => s + l.dureeMinutes, 0))}</div>
+      <div class="libelle">HNO</div></div>
+    <div class="tuile"><div class="valeur mono-nombre">${ast.length}</div>
+      <div class="libelle">Astreintes</div>
+      <div class="detail">${nonResolues ? nonResolues + " non résolue(s)" : "toutes résolues"}</div></div>
+  </div>
+  <div class="grille-2">
+    <div class="carte"><h2>Minutes par TTK</h2>
+      ${barres.length ? `<div class="viz-barres">` + barres.map(b => `
+        <div class="viz-ligne">
+          <span class="etiquette" title="${echap(b.etiquette)}">${echap(b.etiquette)}</span>
+          <div class="viz-piste"><div class="viz-barre" style="width:${Math.max(2, Math.round(b.valeur / max * 100))}%"></div></div>
+          <span class="valeur">${formatMinutes(b.valeur)}</span>
+        </div>`).join("") + `</div>` : `<p class="texte-muet">Aucune donnée sur la période.</p>`}</div>
+    <div class="carte"><h2>Mes astreintes du mois</h2>
+      <div class="table-envel"><table class="donnees">
+        <thead><tr><th scope="col">Date</th><th scope="col">Change / motif</th><th scope="col">Description</th><th class="num" scope="col">Durée</th><th scope="col">Résolution</th></tr></thead>
+        <tbody>${ast.map(l => `<tr><td>${formatDateCourte(l.date)}</td><td>${echap(l.changeOuMotif)}</td>
+          <td>${echap(l.description)}</td><td class="num">${l.dureeMinutes} min</td>
+          <td>${l.estResolu ? `<span class="badge badge-complete"><span class="point"></span>Résolue</span>` :
+            `<span class="badge badge-vide"><span class="point"></span>Non résolue</span>`}</td></tr>`).join("") ||
+          `<tr><td colspan="5" class="texte-muet">Aucune astreinte ce mois-ci.</td></tr>`}</tbody>
+      </table></div></div>
+  </div>`;
+}
+
+/* ================= MON MOT DE PASSE ================= */
+
+function ouvrirMonMdp(contexte) {
+  $("#mm-contexte").textContent = contexte || "";
+  $("#mm-actuel").value = ""; $("#mm-nouveau").value = ""; $("#mm-confirme").value = "";
+  $("#mm-erreur").hidden = true;
+  $("#dlg-monmdp").showModal();
+}
+
+async function validerMonMdp() {
+  const zone = $("#mm-erreur");
+  const actuel = $("#mm-actuel").value, nouveau = $("#mm-nouveau").value, confirme = $("#mm-confirme").value;
+  let probleme = null;
+  if (!actuel) { probleme = "Saisissez votre mot de passe actuel."; }
+  else if (nouveau.trim().length < 12) { probleme = "Le nouveau mot de passe doit compter au moins 12 caractères."; }
+  else if (nouveau !== confirme) { probleme = "La confirmation ne correspond pas."; }
+  if (probleme) { zone.textContent = probleme; zone.hidden = false; return; }
+  try {
+    await api("/api/moi/mot-de-passe", { methode: "POST", corps: { actuel, nouveau } });
+    etat.moi.doitChangerMdp = false;
+    $("#dlg-monmdp").close();
+  } catch (e) {
+    zone.textContent = e.message;
+    zone.hidden = false;
+  }
+}
+
+/* ================= MANAGER / ADMIN (incréments 2 et 3) ================= */
+
+let notifTimer = null;
+function notifier(msg, type) {
+  let el = $("#notif");
+  if (!el) { el = document.createElement("div"); el.id = "notif"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+  el.textContent = msg;
+  el.className = "notif on" + (type === "err" ? " err" : "");
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(() => { el.className = "notif" + (type === "err" ? " err" : ""); }, 3400);
+}
+async function agir(fn) { try { await fn(); } catch (e) { notifier(e.message || "Erreur", "err"); } }
+
+function telecharger(url) { const a = document.createElement("a"); a.href = url; a.rel = "noopener"; document.body.appendChild(a); a.click(); a.remove(); }
+function champSelect(id, options, valeur, vide) {
+  const opts = (vide ? `<option value="">${echap(vide)}</option>` : "") +
+    options.map(o => `<option value="${echap(o.v)}" ${String(o.v) === String(valeur) ? "selected" : ""}>${echap(o.t)}</option>`).join("");
+  return `<select id="${id}" class="in-select">${opts}</select>`;
+}
+function bornesMois(a, m) { return { du: versIso(new Date(a, m, 1)), au: versIso(new Date(a, m + 1, 0)) }; }
+
+let dsResolve = null;
+function demanderTexte(titre, label, opts) {
+  opts = opts || {};
+  $("#ds-titre").textContent = titre;
+  $("#ds-label").textContent = label;
+  if (opts.options) {
+    $("#ds-controle").innerHTML = champSelect("ds-input", opts.options, opts.valeur == null ? "" : opts.valeur, opts.vide);
+  } else {
+    $("#ds-controle").innerHTML = `<input id="ds-input" class="in-txt" type="${opts.type || "text"}" placeholder="${echap(opts.placeholder || "")}">`;
+    $("#ds-input").value = opts.valeur || "";
+  }
+  $("#ds-erreur").hidden = true;
+  $("#dlg-saisie").showModal();
+  setTimeout(() => { const el = $("#ds-input"); if (el) { el.focus(); } }, 30);
+  return new Promise(res => { dsResolve = res; });
+}
+function demanderConfirmation(texte, libelleOui, action) {
+  etat.confirmAction = action;
+  $("#dlg-confirm-texte").textContent = texte;
+  $("#dlg-confirm-oui").textContent = libelleOui || "Confirmer";
+  $("#dlg-confirm").showModal();
+}
+
+/* ---------- MANAGER ---------- */
+etat.mgr = { du: "", au: "", utilisateur: "" };
+
+async function rendreMgrTableau() {
+  const t = await api(`/api/manager/tableau/${etat.cal.a}/${etat.cal.m + 1}`);
+  const rows = t.lignes.map(x => `<tr>
+      <td>${echap(x.nom)}</td>
+      <td class="num">${x.joursSaisis}/${x.joursAttendus}</td>
+      <td class="num">${formatMinutes(x.minutesNormale)}</td>
+      <td class="num">${x.ecart >= 0 ? "+" : "−"}${formatMinutes(Math.abs(x.ecart))}</td>
+      <td class="num">${x.minutesHno ? formatMinutes(x.minutesHno) : "—"}</td>
+      <td class="num">${x.nbAstreinte || "—"}</td>
+      <td><span class="pastille ${x.enRetard ? "p-retard" : "p-ok"}">${x.enRetard ? ("en retard · " + x.manquants + " j") : "à jour"}</span></td>
+    </tr>`).join("");
+  $("#contenu").innerHTML = `
+    <div class="entete-vue"><h2>Tableau de bord — ${echap(libelleMois(etat.cal.a, etat.cal.m))}</h2></div>
+    <div class="cal-outils" style="margin-bottom:16px">
+      <button class="btn btn-petit" data-nav-cal="-1" aria-label="Mois précédent">←</button>
+      <button class="btn btn-petit" data-nav-cal="1" aria-label="Mois suivant">→</button>
+      <button class="btn btn-petit" data-act="mgr.exportMois">Exporter le mois (CSV)</button>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="v">${t.effectif}</div><div class="l">techniciens actifs</div></div>
+      <div class="kpi"><div class="v">${t.totalRecu}</div><div class="l">à jour</div></div>
+      <div class="kpi"><div class="v">${t.totalRetard}</div><div class="l">en retard</div></div>
+      <div class="kpi"><div class="v">${t.joursOuvres}</div><div class="l">jours ouvrés écoulés</div></div>
+    </div>
+    <div class="carte"><table class="tbl">
+      <thead><tr><th>Technicien</th><th class="num">Jours</th><th class="num">Normale</th><th class="num">Écart</th><th class="num">HNO</th><th class="num">Astr.</th><th>Statut</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="7" class="texte-secondaire">Aucun technicien actif.</td></tr>`}</tbody>
+    </table></div>`;
+}
+
+async function rendreMgrDetail() {
+  if (!etat.mgr.du) { const b = bornesMois(etat.cal.a, etat.cal.m); etat.mgr.du = b.du; etat.mgr.au = b.au; }
+  const techs = await api("/api/manager/utilisateurs");
+  const optsTech = techs.map(u => ({ v: u.id, t: u.nom + (u.statut !== "ACTIF" ? " (" + u.statut.toLowerCase() + ")" : "") }));
+  const p = new URLSearchParams({ du: etat.mgr.du, au: etat.mgr.au });
+  if (etat.mgr.utilisateur) { p.set("utilisateur", etat.mgr.utilisateur); }
+  const r = await api("/api/manager/saisies?" + p.toString());
+  const rows = r.lignes.map(l => `<tr>
+      <td>${echap(formatDateCourte(l.date))}</td><td>${echap(l.technicien)}</td><td>${echap(l.rubrique)}</td>
+      <td>${echap(l.ttk || "—")}</td><td>${echap(l.projet || "—")}</td><td>${echap(l.description)}</td>
+      <td class="num">${formatMinutes(l.dureeMinutes)}</td></tr>`).join("");
+  $("#contenu").innerHTML = `
+    <div class="carte filtres" style="padding:16px;margin-bottom:16px">
+      <div class="champ"><label for="f-du">Du</label><input type="date" id="f-du" class="in-date" value="${etat.mgr.du}"></div>
+      <div class="champ"><label for="f-au">Au</label><input type="date" id="f-au" class="in-date" value="${etat.mgr.au}"></div>
+      <div class="champ"><label for="f-tech">Technicien</label>${champSelect("f-tech", optsTech, etat.mgr.utilisateur, "Tous")}</div>
+      <button class="btn btn-primaire" data-act="mgr.filtrer">Afficher</button>
+      <button class="btn" data-act="mgr.exportDetail">Exporter CSV</button>
+    </div>
+    <div class="carte"><table class="tbl">
+      <thead><tr><th>Date</th><th>Technicien</th><th>Rubrique</th><th>TTK</th><th>Projet</th><th>Description</th><th class="num">Durée</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="7" class="texte-secondaire">Aucune saisie sur la période.</td></tr>`}</tbody>
+    </table></div>`;
+}
+
+/* ---------- ADMIN : comptes ---------- */
+async function rendreAdmComptes() {
+  const [users, profils, infoRoles] = await Promise.all([
+    api("/api/admin/utilisateurs"), api("/api/admin/profils-actifs"), api("/api/admin/roles")]);
+  const optsProfil = profils.map(p => ({ v: p.id, t: p.texte }));
+  etat.optsProfil = optsProfil;
+  const optsRole = infoRoles.roles.map(r => ({ v: r.code, t: r.libelle + " (" + r.code + ")" }));
+  etat.optsRoles = optsRole;
+  const rows = users.map(u => `<tr>
+      <td>${echap(u.nom)}<div class="texte-secondaire" style="font-size:.76rem">${echap(u.login)}${u.email ? " · " + echap(u.email) : ""}</div></td>
+      <td>${u.roles.map(r => `<span class="pastille p-neutre">${echap(r)}</span>`).join(" ")}</td>
+      <td>${u.profil ? echap(u.profil) : '<span class="texte-secondaire">—</span>'}</td>
+      <td><span class="pastille ${u.statut === "ACTIF" ? "p-ok" : "p-retard"}">${echap(u.statut.toLowerCase())}</span>${u.doitChangerMdp ? ' <span class="texte-secondaire" style="font-size:.72rem">mdp à changer</span>' : ""}</td>
+      <td class="actions-tbl">
+        <button class="btn btn-petit" data-act="adm.role" data-id="${u.id}" data-role="${echap(u.roles[0] || "")}">Rôle</button>
+        <button class="btn btn-petit" data-act="adm.profil" data-id="${u.id}" data-prof="${u.profilId == null ? "" : u.profilId}">Profil</button>
+        <button class="btn btn-petit" data-act="adm.mdp" data-id="${u.id}" data-nom="${echap(u.nom)}">Réinit. mdp</button>
+        ${u.statut === "ACTIF"
+          ? `<button class="btn btn-petit" data-act="adm.statut" data-id="${u.id}" data-s="DESACTIVE">Désactiver</button>`
+          : `<button class="btn btn-petit" data-act="adm.statut" data-id="${u.id}" data-s="ACTIF">Réactiver</button>`}
+        <button class="btn btn-petit" data-act="adm.statut" data-id="${u.id}" data-s="ARCHIVE">Archiver</button>
+        <button class="btn btn-petit btn-danger" data-act="adm.suppr" data-id="${u.id}" data-nom="${echap(u.nom)}">Supprimer</button>
+      </td></tr>`).join("");
+  $("#contenu").innerHTML = `
+    <div class="carte sous-carte" style="padding:16px">
+      <h3>Nouveau compte</h3>
+      <div class="filtres">
+        <div class="champ"><label for="n-login">Login</label><input id="n-login" class="in-txt"></div>
+        <div class="champ"><label for="n-nom">Nom affiché</label><input id="n-nom" class="in-txt"></div>
+        <div class="champ"><label for="n-email">E-mail (option.)</label><input id="n-email" class="in-txt"></div>
+        <div class="champ"><label for="n-role">Rôle</label>${champSelect("n-role", optsRole, "TECHNICIEN")}</div>
+        <div class="champ"><label for="n-profil">Profil</label>${champSelect("n-profil", optsProfil, "", "— aucun —")}</div>
+        <div class="champ"><label for="n-mdp">Mot de passe initial</label><input id="n-mdp" class="in-txt" type="text" placeholder="≥ 12 caractères"></div>
+        <button class="btn btn-primaire" data-act="adm.creer">Créer</button>
+      </div>
+      <p class="texte-secondaire" style="font-size:.8rem;margin:8px 0 0">Le compte devra changer son mot de passe à la première connexion. Le rôle donne les droits ; le profil (métier + niveau) se gère dans l'onglet Référentiels.</p>
+    </div>
+    <div class="carte"><table class="tbl">
+      <thead><tr><th>Utilisateur</th><th>Rôles</th><th>Profil</th><th>Statut</th><th>Actions</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>`;
+}
+
+/* ---------- ADMIN : référentiels ---------- */
+async function rendreAdmRef() {
+  const [ttks, projets, profils, feries, parametres, infoRoles] = await Promise.all([
+    api("/api/admin/ttk"), api("/api/admin/projets"), api("/api/admin/profils"), api("/api/admin/feries"), api("/api/admin/parametres"), api("/api/admin/roles")
+  ]);
+  const OPTS_ACCES = [{ v: "TECHNICIEN", t: "Technicien (saisie)" }, { v: "MANAGER", t: "Manager (tableaux + exports)" }, { v: "ADMIN", t: "Administrateur (tout)" }];
+  const tableRoles = `
+    <div class="carte sous-carte" style="padding:16px">
+      <h3>Rôles</h3>
+      ${infoRoles.accesGerable ? `
+      <div class="filtres" style="margin-bottom:12px">
+        <div class="champ" style="min-width:120px"><label>Code</label><input id="role-code" class="in-txt" placeholder="INGE_CTX_N1"></div>
+        <div class="champ"><label>Libellé</label><input id="role-lib" class="in-txt" placeholder="Ingénieur Citrix"></div>
+        <div class="champ"><label>Droits d'accès</label>${champSelect("role-acces", OPTS_ACCES, "TECHNICIEN")}</div>
+        <button class="btn btn-primaire" data-act="adm.roleCreer">Ajouter</button>
+      </div>` : `<div class="avert avert-info" style="margin-bottom:12px">Pour créer des rôles ici, exécuter la migration 007_roles_dynamiques.sql sur la base.</div>`}
+      <table class="tbl"><thead><tr><th>Code</th><th>Libellé</th><th>Droits d'accès</th><th class="num">Comptes</th><th>Actions</th></tr></thead><tbody>
+        ${infoRoles.roles.map(x => `<tr>
+          <td>${echap(x.code)}${x.protege ? ' <span class="texte-secondaire" style="font-size:.72rem">(socle)</span>' : ""}</td>
+          <td>${echap(x.libelle)}</td>
+          <td><span class="pastille p-neutre">${echap(x.acces)}</span></td>
+          <td class="num">${x.comptes}</td>
+          <td class="actions-tbl">
+            ${x.protege || !infoRoles.accesGerable ? "" : `
+            <button class="btn btn-petit" data-act="adm.roleAcces" data-id="${x.id}" data-lib="${echap(x.libelle)}" data-acces="${echap(x.acces)}">Droits</button>
+            ${x.comptes === 0 ? `<button class="btn btn-petit btn-danger" data-act="adm.roleSuppr" data-id="${x.id}" data-code="${echap(x.code)}">Supprimer</button>` : ""}`}
+          </td></tr>`).join("")}
+      </tbody></table>
+      <p class="texte-secondaire" style="font-size:.8rem;margin:8px 0 0">Le rôle porte les droits (via son niveau d'accès) ; le profil porte le métier et le niveau. Les rôles socles ne se modifient pas.</p>
+    </div>`;
+  const tableRef = (titre, kind, liste) => `
+    <div class="carte sous-carte" style="padding:16px">
+      <h3>${echap(titre)}</h3>
+      <div class="filtres" style="margin-bottom:12px">
+        <div class="champ" style="min-width:110px"><label>Code</label><input id="${kind}-code" class="in-txt"></div>
+        <div class="champ"><label>Libellé</label><input id="${kind}-lib" class="in-txt"></div>
+        <div class="champ"><label>Description</label><input id="${kind}-desc" class="in-txt"></div>
+        <button class="btn btn-primaire" data-act="adm.refCreer" data-kind="${kind}">Ajouter</button>
+      </div>
+      <table class="tbl"><thead><tr><th>Code</th><th>Libellé</th><th>Statut</th><th>Actions</th></tr></thead><tbody>
+        ${liste.map(x => `<tr>
+          <td>${echap(x.code)}</td><td>${echap(x.libelle)}</td>
+          <td><span class="pastille ${x.actif ? "p-ok" : "p-neutre"}">${x.actif ? "actif" : "inactif"}</span></td>
+          <td class="actions-tbl">
+            <button class="btn btn-petit" data-act="adm.refLib" data-kind="${kind}" data-id="${x.id}" data-lib="${echap(x.libelle)}" data-desc="${echap(x.description || "")}">Renommer</button>
+            <button class="btn btn-petit" data-act="adm.refActif" data-kind="${kind}" data-id="${x.id}" data-lib="${echap(x.libelle)}" data-desc="${echap(x.description || "")}" data-actif="${x.actif ? "0" : "1"}">${x.actif ? "Désactiver" : "Activer"}</button>
+          </td></tr>`).join("") || `<tr><td colspan="4" class="texte-secondaire">Aucun élément.</td></tr>`}
+      </tbody></table>
+    </div>`;
+  const tableFeries = `
+    <div class="carte sous-carte" style="padding:16px">
+      <h3>Jours fériés</h3>
+      <div class="filtres" style="margin-bottom:12px">
+        <div class="champ"><label>Date</label><input id="fer-date" type="date" class="in-date"></div>
+        <div class="champ"><label>Libellé</label><input id="fer-lib" class="in-txt"></div>
+        <button class="btn btn-primaire" data-act="adm.ferieAjout">Ajouter</button>
+      </div>
+      <table class="tbl"><thead><tr><th>Date</th><th>Libellé</th><th>Actions</th></tr></thead><tbody>
+        ${feries.map(f => `<tr><td>${echap(formatDateCourte(f.date))}</td><td>${echap(f.libelle)}</td>
+          <td><button class="btn btn-petit btn-danger" data-act="adm.ferieRetrait" data-date="${echap(f.date)}">Retirer</button></td></tr>`).join("")
+          || `<tr><td colspan="3" class="texte-secondaire">Aucun jour férié.</td></tr>`}
+      </tbody></table>
+    </div>`;
+  const tableParam = `
+    <div class="carte sous-carte" style="padding:16px">
+      <h3>Paramètres</h3>
+      <table class="tbl"><thead><tr><th>Clé</th><th class="num">Valeur</th><th>Description</th><th></th></tr></thead><tbody>
+        ${parametres.map(p => `<tr><td>${echap(p.cle)}</td><td class="num">${echap(p.valeur)}</td><td>${echap(p.description || "")}</td>
+          <td><button class="btn btn-petit" data-act="adm.param" data-cle="${echap(p.cle)}" data-val="${echap(p.valeur)}">Modifier</button></td></tr>`).join("")}
+      </tbody></table>
+    </div>`;
+  const tableProfil = `
+    <div class="carte sous-carte" style="padding:16px">
+      <h3>Profils (fonction + niveau)</h3>
+      <div class="filtres" style="margin-bottom:12px">
+        <div class="champ" style="min-width:110px"><label>Code</label><input id="profil-code" class="in-txt" placeholder="INGE_CTX_N3"></div>
+        <div class="champ"><label>Fonction</label><input id="profil-fonction" class="in-txt" placeholder="Ingénieur Citrix"></div>
+        <div class="champ"><label>Niveau</label><input id="profil-niveau" class="in-txt" placeholder="Sénior"></div>
+        <button class="btn btn-primaire" data-act="adm.profilCreer">Ajouter</button>
+      </div>
+      <table class="tbl"><thead><tr><th>Code</th><th>Fonction</th><th>Niveau</th><th>Statut</th><th>Actions</th></tr></thead><tbody>
+        ${profils.map(x => `<tr>
+          <td>${echap(x.code)}</td><td>${echap(x.libelle)}</td><td>${echap(x.niveau)}</td>
+          <td><span class="pastille ${x.actif ? "p-ok" : "p-neutre"}">${x.actif ? "actif" : "inactif"}</span></td>
+          <td class="actions-tbl">
+            <button class="btn btn-petit" data-act="adm.profilEdit" data-id="${x.id}" data-lib="${echap(x.libelle)}" data-niv="${echap(x.niveau)}">Modifier</button>
+            <button class="btn btn-petit" data-act="adm.profilActif" data-id="${x.id}" data-lib="${echap(x.libelle)}" data-niv="${echap(x.niveau)}" data-actif="${x.actif ? "0" : "1"}">${x.actif ? "Désactiver" : "Activer"}</button>
+          </td></tr>`).join("") || `<tr><td colspan="5" class="texte-secondaire">Aucun profil.</td></tr>`}
+      </tbody></table>
+    </div>`;
+  $("#contenu").innerHTML = tableRoles + tableRef("TTK (thèmes)", "ttk", ttks) + tableRef("Projets", "projets", projets)
+    + tableProfil + tableFeries + tableParam;
+}
+
+/* ---------- ADMIN : journal d'audit ---------- */
+async function rendreAdmAudit() {
+  etat.adm = etat.adm || {};
+  const p = new URLSearchParams({ page: String(etat.adm.auditPage || 1) });
+  if (etat.adm.auditDu) { p.set("du", etat.adm.auditDu); }
+  if (etat.adm.auditAu) { p.set("au", etat.adm.auditAu); }
+  if (etat.adm.auditAction) { p.set("action", etat.adm.auditAction); }
+  const r = await api("/api/admin/audit?" + p.toString());
+  const rows = r.lignes.map(l => `<tr>
+      <td>${echap(l.horodatage)}</td><td>${echap(l.acteur)}</td><td><span class="pastille p-neutre">${echap(l.action)}</span></td>
+      <td>${echap(l.entite || "—")}${l.entiteId != null ? " #" + l.entiteId : ""}</td><td>${echap(l.motif || "")}</td></tr>`).join("");
+  $("#contenu").innerHTML = `
+    <div class="carte filtres" style="padding:16px;margin-bottom:16px">
+      <div class="champ"><label for="a-du">Du</label><input id="a-du" type="date" class="in-date" value="${etat.adm.auditDu || ""}"></div>
+      <div class="champ"><label for="a-au">Au</label><input id="a-au" type="date" class="in-date" value="${etat.adm.auditAu || ""}"></div>
+      <div class="champ"><label for="a-action">Action</label><input id="a-action" class="in-txt" value="${echap(etat.adm.auditAction || "")}" placeholder="ex. CONNEXION"></div>
+      <button class="btn btn-primaire" data-act="adm.auditFiltrer">Filtrer</button>
+      <button class="btn" data-act="adm.auditExport">Exporter CSV</button>
+    </div>
+    <div class="carte"><table class="tbl">
+      <thead><tr><th>Horodatage</th><th>Acteur</th><th>Action</th><th>Entité</th><th>Motif</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="5" class="texte-secondaire">Aucun événement.</td></tr>`}</tbody></table>
+      <div class="cal-outils" style="margin-top:12px">
+        <button class="btn btn-petit" data-act="adm.auditPage" data-p="-1" ${(etat.adm.auditPage || 1) <= 1 ? "disabled" : ""}>← Précédent</button>
+        <span class="texte-secondaire">Page ${r.page}</span>
+        <button class="btn btn-petit" data-act="adm.auditPage" data-p="1" ${r.lignes.length < r.taille ? "disabled" : ""}>Suivant →</button>
+      </div>
+    </div>`;
+}
+
+/* ---------- Actions déclenchées par [data-act] ---------- */
+const ACTIONS = {
+  "mgr.exportMois": () => { const b = bornesMois(etat.cal.a, etat.cal.m); telecharger(`/api/manager/export.csv?du=${b.du}&au=${b.au}`); },
+  "mgr.filtrer": async () => { etat.mgr = { du: $("#f-du").value, au: $("#f-au").value, utilisateur: $("#f-tech").value }; await rendreVue(); },
+  "mgr.exportDetail": () => {
+    const p = new URLSearchParams({ du: $("#f-du").value, au: $("#f-au").value });
+    if ($("#f-tech").value) { p.set("utilisateur", $("#f-tech").value); }
+    telecharger("/api/manager/export.csv?" + p.toString());
+  },
+  "adm.creer": async () => {
+    await api("/api/admin/utilisateurs", { methode: "POST", corps: {
+      login: $("#n-login").value, nom: $("#n-nom").value, email: $("#n-email").value,
+      role: $("#n-role").value, profilId: $("#n-profil").value ? Number($("#n-profil").value) : null,
+      motDePasse: $("#n-mdp").value } });
+    notifier("Compte créé."); await rendreVue();
+  },
+  "adm.role": async (el) => {
+    const v = await demanderTexte("Rôle du compte", "Choisir le rôle", { options: etat.optsRoles || [], valeur: el.dataset.role || "" });
+    if (v === null || v === "") { return; }
+    await api(`/api/admin/utilisateurs/${el.dataset.id}/roles`, { methode: "POST", corps: { roles: [v] } });
+    notifier("Rôle mis à jour (prendra effet à sa prochaine connexion)."); await rendreVue();
+  },
+  "adm.roleCreer": async () => {
+    await api("/api/admin/roles", { methode: "POST", corps: { code: $("#role-code").value, libelle: $("#role-lib").value, acces: $("#role-acces").value } });
+    notifier("Rôle créé."); await rendreVue();
+  },
+  "adm.roleAcces": async (el) => {
+    const OPTS = [{ v: "TECHNICIEN", t: "Technicien (saisie)" }, { v: "MANAGER", t: "Manager (tableaux + exports)" }, { v: "ADMIN", t: "Administrateur (tout)" }];
+    const v = await demanderTexte("Droits d'accès du rôle", "Niveau de droits", { options: OPTS, valeur: el.dataset.acces });
+    if (v === null || v === "") { return; }
+    await api(`/api/admin/roles/${el.dataset.id}`, { methode: "PUT", corps: { libelle: el.dataset.lib, acces: v } });
+    notifier("Droits mis à jour."); await rendreVue();
+  },
+  "adm.roleSuppr": (el) => demanderConfirmation(
+    "Supprimer le rôle « " + el.dataset.code + " » ? (possible uniquement s'il n'est affecté à aucun compte)",
+    "Supprimer",
+    async () => { await api(`/api/admin/roles/${el.dataset.id}`, { methode: "DELETE" }); notifier("Rôle supprimé."); await rendreVue(); }),
+  "adm.profil": async (el) => {
+    const v = await demanderTexte("Profil", "Choisir le profil (métier + niveau)", { options: etat.optsProfil || [], valeur: el.dataset.prof || "", vide: "— aucun —" });
+    if (v === null) { return; }
+    await api(`/api/admin/utilisateurs/${el.dataset.id}/profil`, { methode: "POST", corps: { profilId: v ? Number(v) : null } });
+    notifier("Profil mis à jour."); await rendreVue();
+  },
+  "adm.profilCreer": async () => {
+    await api("/api/admin/profils", { methode: "POST", corps: { code: $("#profil-code").value, libelle: $("#profil-fonction").value, niveau: $("#profil-niveau").value } });
+    notifier("Profil ajouté."); await rendreVue();
+  },
+  "adm.profilEdit": async (el) => {
+    const fonction = await demanderTexte("Modifier le profil", "Fonction", { valeur: el.dataset.lib });
+    if (fonction === null) { return; }
+    const niveau = await demanderTexte("Modifier le profil", "Niveau", { valeur: el.dataset.niv });
+    if (niveau === null) { return; }
+    await api(`/api/admin/profils/${el.dataset.id}`, { methode: "PUT", corps: { libelle: fonction, niveau: niveau, actif: true } });
+    notifier("Profil modifié."); await rendreVue();
+  },
+  "adm.profilActif": async (el) => {
+    await api(`/api/admin/profils/${el.dataset.id}`, { methode: "PUT", corps: { libelle: el.dataset.lib, niveau: el.dataset.niv, actif: el.dataset.actif === "1" } });
+    notifier("Statut modifié."); await rendreVue();
+  },
+  "adm.mdp": async (el) => {
+    const mdp = await demanderTexte("Réinitialiser le mot de passe", "Nouveau mot de passe pour « " + el.dataset.nom + " »", { type: "text", placeholder: "≥ 12 caractères" });
+    if (mdp == null) { return; }
+    await api(`/api/admin/utilisateurs/${el.dataset.id}/mot-de-passe`, { methode: "POST", corps: { motDePasse: mdp } });
+    notifier("Mot de passe réinitialisé (changement forcé à la prochaine connexion).");
+  },
+  "adm.statut": async (el) => {
+    await api(`/api/admin/utilisateurs/${el.dataset.id}/statut`, { methode: "POST", corps: { statut: el.dataset.s } });
+    notifier("Statut mis à jour."); await rendreVue();
+  },
+  "adm.suppr": (el) => demanderConfirmation(
+    "Supprimer définitivement « " + el.dataset.nom + " » ? Uniquement si le compte n'a aucun historique (sinon, archivez-le).",
+    "Supprimer",
+    async () => { await api(`/api/admin/utilisateurs/${el.dataset.id}`, { methode: "DELETE" }); notifier("Compte supprimé."); await rendreVue(); }),
+  "adm.refCreer": async (el) => {
+    const k = el.dataset.kind;
+    await api(`/api/admin/${k}`, { methode: "POST", corps: { code: $(`#${k}-code`).value, libelle: $(`#${k}-lib`).value, description: $(`#${k}-desc`).value } });
+    notifier("Ajouté."); await rendreVue();
+  },
+  "adm.refLib": async (el) => {
+    const lib = await demanderTexte("Renommer", "Nouveau libellé", { valeur: el.dataset.lib });
+    if (lib == null) { return; }
+    await api(`/api/admin/${el.dataset.kind}/${el.dataset.id}`, { methode: "PUT", corps: { libelle: lib, description: el.dataset.desc, actif: true } });
+    notifier("Modifié."); await rendreVue();
+  },
+  "adm.refActif": async (el) => {
+    await api(`/api/admin/${el.dataset.kind}/${el.dataset.id}`, { methode: "PUT", corps: { libelle: el.dataset.lib, description: el.dataset.desc, actif: el.dataset.actif === "1" } });
+    notifier("Statut modifié."); await rendreVue();
+  },
+  "adm.ferieAjout": async () => {
+    await api("/api/admin/feries", { methode: "POST", corps: { date: $("#fer-date").value, libelle: $("#fer-lib").value } });
+    notifier("Jour férié ajouté."); await rendreVue();
+  },
+  "adm.ferieRetrait": (el) => demanderConfirmation("Retirer ce jour férié ?", "Retirer",
+    async () => { await api(`/api/admin/feries/${el.dataset.date}`, { methode: "DELETE" }); notifier("Retiré."); await rendreVue(); }),
+  "adm.param": async (el) => {
+    const v = await demanderTexte("Modifier le paramètre", el.dataset.cle, { valeur: el.dataset.val });
+    if (v == null) { return; }
+    await api(`/api/admin/parametres/${encodeURIComponent(el.dataset.cle)}`, { methode: "PUT", corps: { valeur: v } });
+    notifier("Paramètre mis à jour."); await rendreVue();
+  },
+  "adm.auditFiltrer": async () => { etat.adm = { auditPage: 1, auditDu: $("#a-du").value, auditAu: $("#a-au").value, auditAction: $("#a-action").value }; await rendreVue(); },
+  "adm.auditPage": async (el) => { etat.adm.auditPage = Math.max(1, (etat.adm.auditPage || 1) + Number(el.dataset.p)); await rendreVue(); },
+  "adm.auditExport": () => {
+    const p = new URLSearchParams();
+    if (etat.adm && etat.adm.auditDu) { p.set("du", etat.adm.auditDu); }
+    if (etat.adm && etat.adm.auditAu) { p.set("au", etat.adm.auditAu); }
+    telecharger("/api/admin/audit/export.csv?" + p.toString());
+  }
+};
+
+/* ================= THEME ================= */
+
+function majIconeTheme() {
+  const clair = document.documentElement.dataset.theme === "light";
+  const chemin = clair
+    ? '<path d="M12 3a6.4 6.4 0 0 0 9 9 9 9 0 1 1-9-9z"/>'
+    : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+  ["icone-theme", "icone-theme-connexion"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.innerHTML = chemin; }
+  });
+}
+
+/* ================= EVENEMENTS ================= */
+
+document.addEventListener("click", async ev => {
+  const b = s => ev.target.closest(s);
+  let el;
+  try {
+    if (b("#btn-theme") || b("#btn-theme-connexion")) {
+      const racine = document.documentElement;
+      if (racine.dataset.theme === "light") { delete racine.dataset.theme; } else { racine.dataset.theme = "light"; }
+      majIconeTheme();
+    } else if (b("#btn-deconnexion")) {
+      try { await api("/api/deconnexion", { methode: "POST" }); } catch { /* ignore */ }
+      afficherConnexion();
+    } else if (b("#btn-mon-mdp")) {
+      ouvrirMonMdp("");
+    } else if (b("#dlg-monmdp-annuler")) {
+      if (etat.moi && etat.moi.doitChangerMdp) { return; } /* changement obligatoire */
+      $("#dlg-monmdp").close();
+    } else if (b("#dlg-monmdp-valider")) {
+      await validerMonMdp();
+    } else if ((el = b("[data-act]"))) {
+      const cible = el;
+      await agir(() => ACTIONS[cible.dataset.act] ? ACTIONS[cible.dataset.act](cible) : undefined);
+    } else if (b("#ds-valider")) {
+      const v = $("#ds-input").value;
+      $("#dlg-saisie").close();
+      if (dsResolve) { const r = dsResolve; dsResolve = null; r(v); }
+    } else if (b("#ds-annuler")) {
+      $("#dlg-saisie").close();
+      if (dsResolve) { const r = dsResolve; dsResolve = null; r(null); }
+    } else if ((el = b("[data-vue]"))) {
+      etat.vue = el.dataset.vue;
+      await rendreVue();
+    } else if ((el = b("[data-nav-cal]"))) {
+      const d = new Date(etat.cal.a, etat.cal.m + Number(el.dataset.navCal), 1);
+      etat.cal = { a: d.getFullYear(), m: d.getMonth() };
+      await rendreVue();
+    } else if (b("[data-sel-mode]")) {
+      etat.selection.active = !etat.selection.active;
+      if (!etat.selection.active) { etat.selection.jours.clear(); }
+      await rendreVue();
+    } else if ((el = b("[data-sel-rapide]"))) {
+      const type = el.dataset.selRapide;
+      if (type === "effacer") { etat.selection.jours.clear(); }
+      else if (type === "ouvres") { joursSelectionnablesDuMois(estJourOuvre).forEach(i => etat.selection.jours.add(i)); }
+      else if (type === "weekends") { joursSelectionnablesDuMois(estWeekend).forEach(i => etat.selection.jours.add(i)); }
+      await rendreVue();
+    } else if (b("[data-rec-ajouter]")) {
+      const cochees = [...document.querySelectorAll(".rec-jour:checked")].map(c => Number(c.value));
+      const du = $("#rec-du").value, au = $("#rec-au").value;
+      etat.selection.recurrence = { jours: new Set(cochees.map(String)), du, au };
+      if (!cochees.length || !du || !au || au < du) { return; }
+      if ((depuisIso(au) - depuisIso(du)) / 86400000 > 366) { return; }
+      const d = depuisIso(du), fin = depuisIso(au);
+      while (d <= fin) {
+        const iso = versIso(d);
+        if (cochees.includes(d.getDay()) && technicienPeutModifier(iso)) { etat.selection.jours.add(iso); }
+        d.setDate(d.getDate() + 1);
+      }
+      await rendreVue();
+    } else if (b("[data-ouvrir-lot]")) {
+      ouvrirLot();
+    } else if (b("#dlg-lot-appliquer")) {
+      await appliquerLot();
+    } else if (b("#dlg-lot-fermer")) {
+      $("#dlg-lot").close();
+      await rendreVue();
+    } else if ((el = b("[data-suppr-serie]"))) {
+      etat.serieEnAttente = el.dataset.supprSerie;
+      $("#dlg-confirm-oui").textContent = "Supprimer";
+      $("#dlg-confirm-texte").textContent =
+        "Supprimer tous les jours de cette série ? Les jours hors fenêtre de modification seront conservés. Action journalisée.";
+      $("#dlg-confirm").showModal();
+    } else if (b("#dlg-confirm-oui")) {
+      $("#dlg-confirm").close();
+      if (etat.confirmAction) {
+        const f = etat.confirmAction; etat.confirmAction = null;
+        await agir(f);
+      } else {
+        const g = etat.serieEnAttente; etat.serieEnAttente = null;
+        if (g) {
+          await agir(async () => {
+            await api(`/api/saisies/series/${g}`, { methode: "DELETE" });
+            $("#dlg-jour").close();
+            await rendreVue();
+          });
+        }
+      }
+    } else if (b("#dlg-confirm-non")) {
+      etat.serieEnAttente = null; etat.confirmAction = null;
+      $("#dlg-confirm").close();
+    } else if ((el = b(".cal-jour")) && !el.classList.contains("hors-mois")) {
+      const iso = el.dataset.jour;
+      if (etat.selection.active) {
+        if (technicienPeutModifier(iso)) {
+          if (etat.selection.jours.has(iso)) { etat.selection.jours.delete(iso); } else { etat.selection.jours.add(iso); }
+          await rendreVue();
+        }
+      } else {
+        await ouvrirJour(iso);
+      }
+    } else if ((el = b("[data-ajout-ligne]"))) {
+      brouillon.lignes = collecterBrouillon();
+      const rub = el.dataset.ajoutLigne;
+      brouillon.lignes.push({ rubrique: rub, dureeMinutes: 0, ttkId: null, projetId: null, description: "",
+        changeOuMotif: rub === "ASTREINTE" ? "" : null, estResolu: null, resolutionCommentaire: null, groupeId: null });
+      rendreEditeur();
+    } else if ((el = b("[data-dupliquer]"))) {
+      const toutes = [...document.querySelectorAll("#dlg-jour-corps .ligne-saisie")];
+      const idx = toutes.indexOf(el.closest(".ligne-saisie"));
+      brouillon.lignes = collecterBrouillon();
+      brouillon.lignes.splice(idx + 1, 0, Object.assign({}, brouillon.lignes[idx], { groupeId: null }));
+      rendreEditeur();
+    } else if ((el = b("[data-suppr-ligne]"))) {
+      const toutes = [...document.querySelectorAll("#dlg-jour-corps .ligne-saisie")];
+      const idx = toutes.indexOf(el.closest(".ligne-saisie"));
+      brouillon.lignes = collecterBrouillon();
+      brouillon.lignes.splice(idx, 1);
+      rendreEditeur();
+    } else if (b("#dlg-jour-fermer")) {
+      $("#dlg-jour").close();
+      await rendreVue();
+    } else if (b("#dlg-jour-enregistrer")) {
+      await enregistrerJour();
+    }
+  } catch (e) {
+    console.error(e);
+    const zone = document.createElement("div");
+    zone.className = "avert avert-erreur";
+    zone.setAttribute("role", "alert");
+    zone.textContent = e.message + (e.correlationId ? " [ref " + e.correlationId.slice(0, 8) + "]" : "");
+    ($("#contenu") || document.body).prepend(zone);
+    setTimeout(() => zone.remove(), 6000);
+  }
+});
+
+document.addEventListener("change", ev => {
+  if (ev.target.matches(".in-resolu")) {
+    const wrap = ev.target.closest(".sous-champs-astreinte").querySelector(".wrap-explication");
+    const oui = ev.target.value === "oui";
+    wrap.hidden = !oui;
+    if (!oui) { wrap.querySelector(".in-explication").value = ""; }
+  } else if (ev.target.matches("#lot-rubrique") || ev.target.matches("#lot-resolu")) {
+    majChampsLot();
+  } else if (ev.target.matches(".rec-jour")) {
+    const rec = etat.selection.recurrence;
+    if (ev.target.checked) { rec.jours.add(ev.target.value); } else { rec.jours.delete(ev.target.value); }
+  } else if (ev.target.matches("#rec-du")) {
+    etat.selection.recurrence.du = ev.target.value;
+  } else if (ev.target.matches("#rec-au")) {
+    etat.selection.recurrence.au = ev.target.value;
+  }
+});
+
+document.addEventListener("input", ev => {
+  if (ev.target.matches("#dlg-jour-corps .in-duree")) { majTotauxEditeur(); }
+});
+
+document.addEventListener("submit", async ev => {
+  ev.preventDefault();
+  if (ev.target.id !== "form-connexion") { return; }
+  const bouton = $("#btn-connexion");
+  bouton.disabled = true;
+  try {
+    etat.moi = await api("/api/connexion", {
+      methode: "POST",
+      corps: { login: $("#cx-login").value, mdp: $("#cx-mdp").value }
+    });
+    $("#cx-mdp").value = "";
+    await apresConnexion();
+  } catch (e) {
+    const zone = $("#cx-erreur");
+    zone.textContent = e.message;
+    zone.hidden = false;
+  } finally {
+    bouton.disabled = false;
+  }
+});
+
+demarrer();
+
+</script>
+</body>
+</html>
