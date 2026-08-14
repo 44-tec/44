@@ -1,0 +1,40 @@
+/* ============================================================================
+   Migration 009 - TJM (taux journalier moyen / taux de facturation par jour)
+   Demande client du 14/08/2026.
+
+   Ajoute une colonne facultative dbo.utilisateur.tjm (€ / jour).
+   L'accès à cette donnée est réservé, CÔTÉ APPLICATION, au rôle MANAGER :
+   ni le consultant ni l'administrateur ne la voient. La colonne elle-même
+   n'est exposée par aucun autre écran (ni /moi, ni la liste admin).
+
+   Idempotent, sans dépendance au journal de migration.
+     sqlcmd -S <serveur> -d cra -b -i 009_tjm.sql
+   ============================================================================ */
+
+SET NOCOUNT ON;
+GO
+
+IF COL_LENGTH(N'dbo.utilisateur', N'tjm') IS NULL
+BEGIN
+    ALTER TABLE dbo.utilisateur ADD tjm DECIMAL(10, 2) NULL;
+END;
+GO
+
+/* Garde-fou : le TJM reste positif et raisonnable si renseigné. */
+IF NOT EXISTS (SELECT 1 FROM sys.check_constraints
+               WHERE name = N'CK_utilisateur_tjm'
+                 AND parent_object_id = OBJECT_ID(N'dbo.utilisateur'))
+   AND COL_LENGTH(N'dbo.utilisateur', N'tjm') IS NOT NULL
+BEGIN
+    ALTER TABLE dbo.utilisateur WITH CHECK
+        ADD CONSTRAINT CK_utilisateur_tjm CHECK (tjm IS NULL OR (tjm >= 0 AND tjm <= 100000));
+END;
+GO
+
+IF OBJECT_ID(N'dbo.migration_journal', N'U') IS NOT NULL
+   AND NOT EXISTS (SELECT 1 FROM dbo.migration_journal WHERE script_nom = N'009_tjm')
+BEGIN
+    INSERT INTO dbo.migration_journal (script_nom) VALUES (N'009_tjm');
+END;
+PRINT N'Migration 009_tjm appliquée : colonne utilisateur.tjm (réservée au manager côté application).';
+GO
