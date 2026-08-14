@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="256" height="256" role="img" aria-label="OBS Report">
+  <defs>
+    <linearGradient id="obsg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff8a2a"/>
+      <stop offset="1" stop-color="#e64b00"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#obsg)"/>
+  <rect x="13" y="34" width="9" height="17" rx="2.5" fill="#ffffff" opacity=".82"/>
+  <rect x="27.5" y="25" width="9" height="26" rx="2.5" fill="#ffffff" opacity=".92"/>
+  <rect x="42" y="15" width="9" height="36" rx="2.5" fill="#ffffff"/>
+  <circle cx="46.5" cy="9.5" r="3.4" fill="#ffffff"/>
+</svg>
